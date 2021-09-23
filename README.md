@@ -1,10 +1,10 @@
-# MODULE_NAME
+# wf_core_data_dashboard
 
-SHORT_DESCRIPTION
+Dashboard for viewing Wildflower data
 
 ## Installation
 
-`pip install PYPI_PACKAGE_NAME`
+`pip install wf-core-data-dashboard`
 
 ## Task list
 * TBD

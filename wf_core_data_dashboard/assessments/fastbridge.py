@@ -5,10 +5,16 @@ import os
 
 def student_groups_page_html(
     student_groups,
-    title='FastBridge results',
-    subtitle=''
+    title=None,
+    subtitle=None
 ):
-    table_html = student_groups_table_html(student_groups)
+    if title is None:
+        title='FastBridge results'
+    if subtitle is None:
+        subtitle=''
+    table_html = student_groups_table_html(
+        student_groups=student_groups
+    )
     page_html = wf_core_data_dashboard.core.single_table_page_html(
         title=title,
         subtitle=subtitle,
@@ -18,10 +24,29 @@ def student_groups_page_html(
 
 def students_tests_page_html(
     students_tests,
-    title='FastBridge results',
-    subtitle=''
+    school_year=None,
+    school=None,
+    test=None,
+    subtest=None,
+    title=None,
+    subtitle=None
 ):
-    table_html = students_tests_table_html(students_tests)
+    if title is None:
+        title='FastBridge results'
+    if subtitle is None:
+        subtitle = ':'.join([
+            school_year,
+            school,
+            test,
+            subtest
+        ])
+    table_html = students_tests_table_html(
+        students_tests=students_tests,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
+    )
     page_html = wf_core_data_dashboard.core.single_table_page_html(
         title=title,
         subtitle=subtitle,
@@ -69,7 +94,15 @@ def student_groups_table_html(student_groups):
     )
     return table_html
 
-def students_tests_table_html(students_tests):
+def students_tests_table_html(
+    students_tests,
+    school_year=None,
+    school=None,
+    test=None,
+    subtest=None,
+    title=None,
+    subtitle=None
+):
     students_tests = students_tests.copy()
     students_tests = (
         students_tests
@@ -136,6 +169,14 @@ def students_tests_table_html(students_tests):
         ['Fall', 'Winter', 'Spring', 'Growth', 'Attainment', 'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
     ]
     students_tests.index.names = ['School year', 'School', 'Test', 'Subtest', 'FAST ID']
+    if school_year is not None:
+        students_tests = students_tests.xs(school_year, level='School year')
+    if school is not None:
+        students_tests = students_tests.xs(school, level='School')
+    if test is not None:
+        students_tests = students_tests.xs(test, level='Test')
+    if subtest is not None:
+        students_tests = students_tests.xs(subtest, level='Subtest')
     table_html = students_tests.to_html(
         table_id='results',
         classes=[

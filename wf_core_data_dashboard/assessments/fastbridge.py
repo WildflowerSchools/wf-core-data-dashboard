@@ -5,15 +5,31 @@ import os
 
 def student_groups_page_html(
     student_groups,
+    school_year=None,
+    school=None,
+    test=None,
+    subtest=None,
     title=None,
     subtitle=None
 ):
     if title is None:
         title='FastBridge results'
     if subtitle is None:
-        subtitle=''
+        subtitle = ':'.join(filter(
+            lambda x: x is not None,
+            [
+                school_year,
+                school,
+                test,
+                subtest
+            ]
+        ))
     table_html = student_groups_table_html(
-        student_groups=student_groups
+        student_groups=student_groups,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
     )
     page_html = wf_core_data_dashboard.core.single_table_page_html(
         title=title,
@@ -34,12 +50,15 @@ def students_tests_page_html(
     if title is None:
         title='FastBridge results'
     if subtitle is None:
-        subtitle = ':'.join([
-            school_year,
-            school,
-            test,
-            subtest
-        ])
+        subtitle = ':'.join(filter(
+            lambda x: x is not None,
+            [
+                school_year,
+                school,
+                test,
+                subtest
+            ]
+        ))
     table_html = students_tests_table_html(
         students_tests=students_tests,
         school_year=school_year,
@@ -54,7 +73,15 @@ def students_tests_page_html(
     )
     return page_html
 
-def student_groups_table_html(student_groups):
+def student_groups_table_html(
+    student_groups,
+    school_year=None,
+    school=None,
+    test=None,
+    subtest=None,
+    title=None,
+    subtitle=None
+):
     student_groups = student_groups.copy()
     student_groups['frac_met_growth_goal'] = student_groups['frac_met_growth_goal'].apply(
         lambda x: '{:.0f}%'.format(round(100*x))
@@ -81,6 +108,14 @@ def student_groups_table_html(student_groups):
         ['N', 'Met growth goal', 'Met attainment goal', 'Met goal', 'N', 'Percentile growth']
     ]
     student_groups.index.names = ['School year', 'School', 'Test', 'Subtest']
+    if school_year is not None:
+        student_groups = student_groups.xs(school_year, level='School year')
+    if school is not None:
+        student_groups = student_groups.xs(school, level='School')
+    if test is not None:
+        student_groups = student_groups.xs(test, level='Test')
+    if subtest is not None:
+        student_groups = student_groups.xs(subtest, level='Subtest')
     table_html = student_groups.to_html(
         table_id='results',
         classes=[

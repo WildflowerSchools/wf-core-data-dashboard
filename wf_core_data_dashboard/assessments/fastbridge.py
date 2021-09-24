@@ -1,7 +1,22 @@
 import wf_core_data_dashboard.core
+import wf_core_data
 import pandas as pd
 import os
 
+def generate_fastbridge_table_data(
+    test_events_path,
+    student_info_path
+):
+    test_events = pd.read_pickle(test_events_path)
+    student_info = pd.read_pickle(student_info_path)
+    students_tests = wf_core_data.summarize_by_student_test_school_year(
+        test_events=test_events,
+        student_info=student_info
+    )
+    student_groups = wf_core_data.summarize_by_student_group(
+        students_tests=students_tests
+    )
+    return students_tests, student_groups
 
 def student_groups_page_html(
     student_groups,

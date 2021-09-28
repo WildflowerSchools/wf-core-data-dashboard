@@ -1,7 +1,8 @@
-import wf_core_data_dashboard.core
+from wf_core_data_dashboard import core
 import wf_core_data
 import pandas as pd
 import os
+
 
 def generate_fastbridge_table_data(
     test_events_path,
@@ -18,6 +19,7 @@ def generate_fastbridge_table_data(
     )
     return students_tests, student_groups
 
+
 def student_groups_page_html(
     student_groups,
     school_year=None,
@@ -28,7 +30,7 @@ def student_groups_page_html(
     subtitle=None
 ):
     if title is None:
-        title='FastBridge results'
+        title = 'FastBridge results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
@@ -40,18 +42,19 @@ def student_groups_page_html(
             ]
         ))
     table_html = student_groups_table_html(
-        student_groups=student_groups,
+        student_groups,
         school_year=school_year,
         school=school,
         test=test,
         subtest=subtest
     )
-    page_html = wf_core_data_dashboard.core.single_table_page_html(
-        title=title,
-        subtitle=subtitle,
-        table_html=table_html
-    )
-    return page_html
+    template = core.get_template("student_groups_table.html")
+    return template.render(
+       title=title,
+       subtitle=subtitle,
+       table_html=table_html
+   )
+
 
 def students_tests_page_html(
     students_tests,
@@ -63,7 +66,7 @@ def students_tests_page_html(
     subtitle=None
 ):
     if title is None:
-        title='FastBridge results'
+        title = 'FastBridge results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
@@ -81,31 +84,30 @@ def students_tests_page_html(
         test=test,
         subtest=subtest
     )
-    page_html = wf_core_data_dashboard.core.single_table_page_html(
-        title=title,
-        subtitle=subtitle,
-        table_html=table_html
-    )
-    return page_html
+    template = core.get_template("students_table.html")
+    return template.render(
+       title=title,
+       subtitle=subtitle,
+       table_html=table_html
+   )
+
 
 def student_groups_table_html(
     student_groups,
     school_year=None,
     school=None,
     test=None,
-    subtest=None,
-    title=None,
-    subtitle=None
+    subtest=None
 ):
     student_groups = student_groups.copy()
     student_groups['frac_met_growth_goal'] = student_groups['frac_met_growth_goal'].apply(
-        lambda x: '{:.0f}%'.format(round(100*x))
+        lambda x: '{:.0f}%'.format(round(100 * x))
     )
     student_groups['frac_met_attainment_goal'] = student_groups['frac_met_attainment_goal'].apply(
-        lambda x: '{:.0f}%'.format(100*x)
+        lambda x: '{:.0f}%'.format(100 * x)
     )
     student_groups['frac_met_goal'] = student_groups['frac_met_goal'].apply(
-        lambda x: '{:.0f}%'.format(100*x)
+        lambda x: '{:.0f}%'.format(100 * x)
     )
     student_groups['mean_percentile_growth'] = student_groups['mean_percentile_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
@@ -119,8 +121,10 @@ def student_groups_table_html(
         'mean_percentile_growth'
     ])
     student_groups.columns = [
-        ['Goals', 'Goals', 'Goals', 'Goals', 'Percentile growth', 'Percentile growth'],
-        ['N', 'Met growth goal', 'Met attainment goal', 'Met goal', 'N', 'Percentile growth']
+        ['Goals', 'Goals', 'Goals', 'Goals',
+            'Percentile growth', 'Percentile growth'],
+        ['N', 'Met growth goal', 'Met attainment goal',
+            'Met goal', 'N', 'Percentile growth']
     ]
     student_groups.index.names = ['School year', 'School', 'Test', 'Subtest']
     if school_year is not None:
@@ -143,6 +147,7 @@ def student_groups_table_html(
         na_rep=''
     )
     return table_html
+
 
 def students_tests_table_html(
     students_tests,
@@ -215,10 +220,17 @@ def students_tests_table_html(
         'percentile_growth'
     ])
     students_tests.columns = [
-        ['Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?', 'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
-        ['Fall', 'Winter', 'Spring', 'Growth', 'Attainment', 'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
+        ['Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
+            'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
+        ['Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
+            'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
     ]
-    students_tests.index.names = ['School year', 'School', 'Test', 'Subtest', 'FAST ID']
+    students_tests.index.names = [
+        'School year',
+        'School',
+        'Test',
+        'Subtest',
+        'FAST ID']
     if school_year is not None:
         students_tests = students_tests.xs(school_year, level='School year')
     if school is not None:

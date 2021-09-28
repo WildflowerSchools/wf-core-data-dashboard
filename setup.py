@@ -13,7 +13,9 @@ def get_version():
 # Dependencies (format is 'PYPI_PACKAGE_NAME[>]=VERSION_NUMBER')
 BASE_DEPENDENCIES = [
     'wf-core-data-python>=0.8.1',
-    'pandas>=1.1.3'
+    'pandas>=1.1.3',
+    'fastapi[all]',
+    # 'wf_fastapi_auth0>=1.0',
 ]
 
 # TEST_DEPENDENCIES = [

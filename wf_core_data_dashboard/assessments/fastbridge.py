@@ -41,15 +41,19 @@ def student_groups_page_html(
                 subtest
             ]
         ))
-    return student_groups_table_html(
-        student_groups=student_groups,
+    template = core.get_template("student_groups_table.html")
+    table_html = student_groups_table_html(
+        student_groups,
         school_year=school_year,
         school=school,
         test=test,
-        subtest=subtest,
-        title=title,
-        subtitle=subtitle,
+        subtest=subtest
     )
+    return template.render(
+       title=title,
+       subtitle=subtitle,
+       table_html=table_html
+   )
 
 
 def students_tests_page_html(
@@ -93,9 +97,7 @@ def student_groups_table_html(
     school_year=None,
     school=None,
     test=None,
-    subtest=None,
-    title=None,
-    subtitle=None
+    subtest=None
 ):
     student_groups = student_groups.copy()
     student_groups['frac_met_growth_goal'] = student_groups['frac_met_growth_goal'].apply(
@@ -133,8 +135,6 @@ def student_groups_table_html(
         student_groups = student_groups.xs(test, level='Test')
     if subtest is not None:
         student_groups = student_groups.xs(subtest, level='Subtest')
-    
-    template = core.get_template("student_groups_table.html")
     table_html = student_groups.to_html(
         table_id='results',
         classes=[
@@ -146,11 +146,7 @@ def student_groups_table_html(
         bold_rows=False,
         na_rep=''
     )
-    return template.render(
-       title=title,
-       subtitle=subtitle,
-       table_html=table_html,
-   )
+    return table_html
 
 
 def students_tests_table_html(

@@ -19,7 +19,7 @@ router = APIRouter()
 ########################################################################
 # HACK - stand in for a database
 ########################################################################
-data_directory = "data"
+data_directory = "./data/analysis/fastbridge_analysis/fastbridge_analysis_20210916"
 
 test_events_path = os.path.join(
     data_directory,

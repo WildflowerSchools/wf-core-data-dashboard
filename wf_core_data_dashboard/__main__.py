@@ -1,6 +1,6 @@
 import uvicorn
 
-from .app import app
+from wf_core_data_dashboard.app import app
 
 
 if __name__ == "__main__":

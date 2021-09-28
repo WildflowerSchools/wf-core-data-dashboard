@@ -9,16 +9,3 @@ env = Environment(
 
 def get_template(name):
     return env.get_template(name)
-
-
-def single_table_page_html(
-    title,
-    subtitle,
-    table_html
-):
-    page_html = HTML_TEMPLATE_SINGLE_TABLE.format(
-        title=title,
-        subtitle=subtitle,
-        table_html=table_html
-    )
-    return page_html

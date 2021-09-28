@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from wf_core_data_dashboard.core import get_template
-from wf_core_data_dashboard import generate_fastbridge_table_data, student_groups_page_html
+from wf_core_data_dashboard import generate_fastbridge_table_data, student_groups_page_html, students_tests_page_html
 
 class StatusResponse(BaseModel):
     status: str = "OK"
@@ -19,7 +19,7 @@ router = APIRouter()
 ########################################################################
 # HACK - stand in for a database
 ########################################################################
-data_directory = "data"
+data_directory = "./data/analysis/fastbridge_analysis/fastbridge_analysis_20210916"
 
 test_events_path = os.path.join(
     data_directory,
@@ -50,5 +50,12 @@ async def index():
 async def index(years: str):
     return student_groups_page_html(
             student_groups,
-            school_year='2020-2021'
+            school_year=years
+        )
+
+@router.get("/students/{years}", response_class=HTMLResponse)
+async def index(years: str):
+    return students_tests_page_html(
+            students_tests=students_tests,
+            school_year=years
         )

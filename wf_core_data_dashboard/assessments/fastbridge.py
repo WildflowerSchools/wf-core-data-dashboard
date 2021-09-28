@@ -41,7 +41,6 @@ def student_groups_page_html(
                 subtest
             ]
         ))
-    template = core.get_template("student_groups_table.html")
     table_html = student_groups_table_html(
         student_groups,
         school_year=school_year,
@@ -49,6 +48,7 @@ def student_groups_page_html(
         test=test,
         subtest=subtest
     )
+    template = core.get_template("student_groups_table.html")
     return template.render(
        title=title,
        subtitle=subtitle,
@@ -84,12 +84,12 @@ def students_tests_page_html(
         test=test,
         subtest=subtest
     )
-    page_html = core.single_table_page_html(
-        title=title,
-        subtitle=subtitle,
-        table_html=table_html
-    )
-    return page_html
+    template = core.get_template("students_table.html")
+    return template.render(
+       title=title,
+       subtitle=subtitle,
+       table_html=table_html
+   )
 
 
 def student_groups_table_html(

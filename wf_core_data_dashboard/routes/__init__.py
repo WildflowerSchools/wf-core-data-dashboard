@@ -50,5 +50,5 @@ async def index():
 async def index(years: str):
     return student_groups_page_html(
             student_groups,
-            school_year='2020-2021'
+            school_year=years
         )

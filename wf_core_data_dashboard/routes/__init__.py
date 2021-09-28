@@ -47,14 +47,14 @@ async def index():
 
 
 @router.get("/group/{years}", response_class=HTMLResponse)
-async def index(years: str):
+async def groups(years: str):
     return student_groups_page_html(
             student_groups,
             school_year=years
         )
 
 @router.get("/students/{years}", response_class=HTMLResponse)
-async def index(years: str):
+async def students(years: str):
     return students_tests_page_html(
             students_tests=students_tests,
             school_year=years

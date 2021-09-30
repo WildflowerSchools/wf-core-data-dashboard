@@ -253,6 +253,8 @@ def students_table_html(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
     students = students.reindex(columns=[
+        'first_name',
+        'last_name',
         'risk_level_fall',
         'risk_level_winter',
         'risk_level_spring',
@@ -265,9 +267,9 @@ def students_table_html(
         'percentile_growth'
     ])
     students.columns = [
-        ['Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
+        ['Name', 'Name', 'Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
             'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
-        ['Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
+        ['First', 'Last', 'Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
             'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
     ]
     students.index.names = [

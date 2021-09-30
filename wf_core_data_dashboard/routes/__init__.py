@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from wf_core_data_dashboard.core import get_template
-from wf_core_data_dashboard import generate_fastbridge_table_data, student_groups_page_html, students_tests_page_html
+from wf_core_data_dashboard import generate_fastbridge_table_data, groups_page_html, students_page_html
 
 class StatusResponse(BaseModel):
     status: str = "OK"
@@ -30,7 +30,7 @@ student_info_path = os.path.join(
     'student_info_20210916.pkl'
 )
 
-students_tests, student_groups = generate_fastbridge_table_data(
+students, groups = generate_fastbridge_table_data(
     test_events_path,
     student_info_path
 )
@@ -47,15 +47,15 @@ async def index():
 
 
 @router.get("/group/{years}", response_class=HTMLResponse)
-async def groups(years: str):
-    return student_groups_page_html(
-            student_groups,
+async def groups_page(years: str):
+    return groups_page_html(
+            groups,
             school_year=years
         )
 
 @router.get("/students/{years}", response_class=HTMLResponse)
-async def students(years: str):
-    return students_tests_page_html(
-            students_tests=students_tests,
+async def students_page(years: str):
+    return students_page_html(
+            students=students,
             school_year=years
         )

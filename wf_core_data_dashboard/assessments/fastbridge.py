@@ -10,18 +10,18 @@ def generate_fastbridge_table_data(
 ):
     test_events = pd.read_pickle(test_events_path)
     student_info = pd.read_pickle(student_info_path)
-    students_tests = wf_core_data.summarize_by_student_test_school_year(
+    students = wf_core_data.summarize_by_student(
         test_events=test_events,
         student_info=student_info
     )
-    student_groups = wf_core_data.summarize_by_student_group(
-        students_tests=students_tests
+    groups = wf_core_data.summarize_by_group(
+        students=students
     )
-    return students_tests, student_groups
+    return students, groups
 
 
-def student_groups_page_html(
-    student_groups,
+def groups_page_html(
+    groups,
     school_year=None,
     school=None,
     test=None,
@@ -41,14 +41,14 @@ def student_groups_page_html(
                 subtest
             ]
         ))
-    table_html = student_groups_table_html(
-        student_groups,
+    table_html = groups_table_html(
+        groups,
         school_year=school_year,
         school=school,
         test=test,
         subtest=subtest
     )
-    template = core.get_template("student_groups_table.html")
+    template = core.get_template("groups_table.html")
     return template.render(
        title=title,
        subtitle=subtitle,
@@ -56,8 +56,8 @@ def student_groups_page_html(
    )
 
 
-def students_tests_page_html(
-    students_tests,
+def students_page_html(
+    students,
     school_year=None,
     school=None,
     test=None,
@@ -77,8 +77,8 @@ def students_tests_page_html(
                 subtest
             ]
         ))
-    table_html = students_tests_table_html(
-        students_tests=students_tests,
+    table_html = students_table_html(
+        students=students,
         school_year=school_year,
         school=school,
         test=test,
@@ -92,27 +92,27 @@ def students_tests_page_html(
    )
 
 
-def student_groups_table_html(
-    student_groups,
+def groups_table_html(
+    groups,
     school_year=None,
     school=None,
     test=None,
     subtest=None
 ):
-    student_groups = student_groups.copy()
-    student_groups['frac_met_growth_goal'] = student_groups['frac_met_growth_goal'].apply(
+    groups = groups.copy()
+    groups['frac_met_growth_goal'] = groups['frac_met_growth_goal'].apply(
         lambda x: '{:.0f}%'.format(round(100 * x))
     )
-    student_groups['frac_met_attainment_goal'] = student_groups['frac_met_attainment_goal'].apply(
+    groups['frac_met_attainment_goal'] = groups['frac_met_attainment_goal'].apply(
         lambda x: '{:.0f}%'.format(100 * x)
     )
-    student_groups['frac_met_goal'] = student_groups['frac_met_goal'].apply(
+    groups['frac_met_goal'] = groups['frac_met_goal'].apply(
         lambda x: '{:.0f}%'.format(100 * x)
     )
-    student_groups['mean_percentile_growth'] = student_groups['mean_percentile_growth'].apply(
+    groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    student_groups = student_groups.reindex(columns=[
+    groups = groups.reindex(columns=[
         'num_valid_test_results',
         'frac_met_growth_goal',
         'frac_met_attainment_goal',
@@ -120,22 +120,22 @@ def student_groups_table_html(
         'num_valid_percentile_growth',
         'mean_percentile_growth'
     ])
-    student_groups.columns = [
+    groups.columns = [
         ['Goals', 'Goals', 'Goals', 'Goals',
             'Percentile growth', 'Percentile growth'],
         ['N', 'Met growth goal', 'Met attainment goal',
             'Met goal', 'N', 'Percentile growth']
     ]
-    student_groups.index.names = ['School year', 'School', 'Test', 'Subtest']
+    groups.index.names = ['School year', 'School', 'Test', 'Subtest']
     if school_year is not None:
-        student_groups = student_groups.xs(school_year, level='School year')
+        groups = groups.xs(school_year, level='School year')
     if school is not None:
-        student_groups = student_groups.xs(school, level='School')
+        groups = groups.xs(school, level='School')
     if test is not None:
-        student_groups = student_groups.xs(test, level='Test')
+        groups = groups.xs(test, level='Test')
     if subtest is not None:
-        student_groups = student_groups.xs(subtest, level='Subtest')
-    table_html = student_groups.to_html(
+        groups = groups.xs(subtest, level='Subtest')
+    table_html = groups.to_html(
         table_id='results',
         classes=[
             'table',
@@ -149,8 +149,8 @@ def student_groups_table_html(
     return table_html
 
 
-def students_tests_table_html(
-    students_tests,
+def students_table_html(
+    students,
     school_year=None,
     school=None,
     test=None,
@@ -158,9 +158,9 @@ def students_tests_table_html(
     title=None,
     subtitle=None
 ):
-    students_tests = students_tests.copy()
-    students_tests = (
-        students_tests
+    students = students.copy()
+    students = (
+        students
         .reset_index()
         .set_index([
             'school_year',
@@ -171,43 +171,43 @@ def students_tests_table_html(
         ])
         .sort_index()
     )
-    students_tests['risk_level_fall'] = students_tests['risk_level_fall'].replace({
+    students['risk_level_fall'] = students['risk_level_fall'].replace({
         'lowRisk': 'Low',
         'someRisk': 'Some',
         'highRisk': 'High'
     })
-    students_tests['risk_level_winter'] = students_tests['risk_level_winter'].replace({
+    students['risk_level_winter'] = students['risk_level_winter'].replace({
         'lowRisk': 'Low',
         'someRisk': 'Some',
         'highRisk': 'High'
     })
-    students_tests['risk_level_spring'] = students_tests['risk_level_spring'].replace({
+    students['risk_level_spring'] = students['risk_level_spring'].replace({
         'lowRisk': 'Low',
         'someRisk': 'Some',
         'highRisk': 'High'
     })
-    students_tests['met_growth_goal'] = students_tests['met_growth_goal'].replace({
+    students['met_growth_goal'] = students['met_growth_goal'].replace({
         False: 'N',
         True: 'Y'
     })
-    students_tests['met_attainment_goal'] = students_tests['met_attainment_goal'].replace({
+    students['met_attainment_goal'] = students['met_attainment_goal'].replace({
         False: 'N',
         True: 'Y'
     })
-    students_tests['met_goal'] = students_tests['met_goal'].replace({
+    students['met_goal'] = students['met_goal'].replace({
         False: 'N',
         True: 'Y'
     })
-    students_tests['percentile_fall'] = students_tests['percentile_fall'].apply(
+    students['percentile_fall'] = students['percentile_fall'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students_tests['percentile_winter'] = students_tests['percentile_winter'].apply(
+    students['percentile_winter'] = students['percentile_winter'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students_tests['percentile_spring'] = students_tests['percentile_spring'].apply(
+    students['percentile_spring'] = students['percentile_spring'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students_tests = students_tests.reindex(columns=[
+    students = students.reindex(columns=[
         'risk_level_fall',
         'risk_level_winter',
         'risk_level_spring',
@@ -219,27 +219,27 @@ def students_tests_table_html(
         'percentile_spring',
         'percentile_growth'
     ])
-    students_tests.columns = [
+    students.columns = [
         ['Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
             'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
         ['Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
             'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
     ]
-    students_tests.index.names = [
+    students.index.names = [
         'School year',
         'School',
         'Test',
         'Subtest',
         'FAST ID']
     if school_year is not None:
-        students_tests = students_tests.xs(school_year, level='School year')
+        students = students.xs(school_year, level='School year')
     if school is not None:
-        students_tests = students_tests.xs(school, level='School')
+        students = students.xs(school, level='School')
     if test is not None:
-        students_tests = students_tests.xs(test, level='Test')
+        students = students.xs(test, level='Test')
     if subtest is not None:
-        students_tests = students_tests.xs(subtest, level='Subtest')
-    table_html = students_tests.to_html(
+        students = students.xs(subtest, level='Subtest')
+    table_html = students.to_html(
         table_id='results',
         classes=[
             'table',

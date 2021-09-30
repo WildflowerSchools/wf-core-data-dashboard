@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import HTMLResponse
@@ -46,16 +46,32 @@ async def index():
                            subtitle="Available Reports")
 
 
-@router.get("/group/{years}", response_class=HTMLResponse)
-async def groups_page(years: str):
+@router.get("/groups/", response_class=HTMLResponse)
+async def groups_page(
+    school_year: Optional[str]=None,
+    school: Optional[str]=None,
+    test: Optional[str]=None,
+    subtest: Optional[str]=None
+):
     return groups_page_html(
-            groups,
-            school_year=years
-        )
+        groups,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
+    )
 
-@router.get("/students/{years}", response_class=HTMLResponse)
-async def students_page(years: str):
+@router.get("/students/", response_class=HTMLResponse)
+async def students_page(
+    school_year: Optional[str]=None,
+    school: Optional[str]=None,
+    test: Optional[str]=None,
+    subtest: Optional[str]=None
+):
     return students_page_html(
-            students=students,
-            school_year=years
-        )
+        students=students,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
+    )

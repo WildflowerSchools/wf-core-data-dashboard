@@ -1,13 +1,13 @@
 import datetime
 import os
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from wf_core_data_dashboard.core import get_template
-from wf_core_data_dashboard import generate_fastbridge_table_data, student_groups_page_html, students_tests_page_html
+from wf_core_data_dashboard import generate_fastbridge_table_data, groups_page_html, students_page_html
 
 class StatusResponse(BaseModel):
     status: str = "OK"
@@ -30,7 +30,7 @@ student_info_path = os.path.join(
     'student_info_20210916.pkl'
 )
 
-students_tests, student_groups = generate_fastbridge_table_data(
+students, groups = generate_fastbridge_table_data(
     test_events_path,
     student_info_path
 )
@@ -46,16 +46,32 @@ async def index():
                            subtitle="Available Reports")
 
 
-@router.get("/group/{years}", response_class=HTMLResponse)
-async def groups(years: str):
-    return student_groups_page_html(
-            student_groups,
-            school_year=years
-        )
+@router.get("/groups/", response_class=HTMLResponse)
+async def groups_page(
+    school_year: Optional[str]=None,
+    school: Optional[str]=None,
+    test: Optional[str]=None,
+    subtest: Optional[str]=None
+):
+    return groups_page_html(
+        groups,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
+    )
 
-@router.get("/students/{years}", response_class=HTMLResponse)
-async def students(years: str):
-    return students_tests_page_html(
-            students_tests=students_tests,
-            school_year=years
-        )
+@router.get("/students/", response_class=HTMLResponse)
+async def students_page(
+    school_year: Optional[str]=None,
+    school: Optional[str]=None,
+    test: Optional[str]=None,
+    subtest: Optional[str]=None
+):
+    return students_page_html(
+        students=students,
+        school_year=school_year,
+        school=school,
+        test=test,
+        subtest=subtest
+    )

@@ -16,6 +16,7 @@ BASE_DEPENDENCIES = [
     'pandas>=1.1.3',
     'fastapi[all]',
     # 'wf_fastapi_auth0>=1.0',
+    'inflection>=0.5.1'
 ]
 
 # TEST_DEPENDENCIES = [

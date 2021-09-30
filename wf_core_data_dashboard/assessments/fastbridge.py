@@ -1,6 +1,8 @@
 from wf_core_data_dashboard import core
 import wf_core_data
 import pandas as pd
+import inflection
+import urllib.parse
 import os
 
 
@@ -127,14 +129,30 @@ def groups_table_html(
             'Met goal', 'N', 'Percentile growth']
     ]
     groups.index.names = ['School year', 'School', 'Test', 'Subtest']
+    group_dict = dict()
     if school_year is not None:
         groups = groups.xs(school_year, level='School year')
+        # group_dict['school_year']=school_year
     if school is not None:
         groups = groups.xs(school, level='School')
+        # group_dict['school']=school
     if test is not None:
         groups = groups.xs(test, level='Test')
+        # group_dict['test']=test
     if subtest is not None:
         groups = groups.xs(subtest, level='Subtest')
+        # group_dict['subtest']=subtest
+    groups[('', '')] = groups.apply(
+        lambda row: generate_students_table_link(
+            row=row,
+            index_columns=groups.index.names,
+            school_year=school_year,
+            school=school,
+            test=test,
+            subtest=subtest
+        ),
+        axis=1
+    )
     table_html = groups.to_html(
         table_id='results',
         classes=[
@@ -144,10 +162,37 @@ def groups_table_html(
             'table-sm'
         ],
         bold_rows=False,
-        na_rep=''
+        na_rep='',
+        escape=False
     )
     return table_html
 
+def generate_students_table_link(
+    row,
+    index_columns,
+    school_year=None,
+    school=None,
+    test=None,
+    subtest=None,
+    link_content='Details'
+):
+    query_dict = dict()
+    if school_year is not None:
+        query_dict['school_year']= school_year
+    if school is not None:
+        query_dict['school']= school
+    if test is not None:
+        query_dict['test']= test
+    if subtest is not None:
+        query_dict['subtest']= subtest
+    for index, column_name in enumerate(index_columns):
+        query_dict[inflection.underscore(column_name)]  = row.name[index]
+    url = '/students/?{}'.format(urllib.parse.urlencode(query_dict))
+    link_html = '<a href=\"{}\">{}</a>'.format(
+        url,
+        link_content
+    )
+    return link_html
 
 def students_table_html(
     students,

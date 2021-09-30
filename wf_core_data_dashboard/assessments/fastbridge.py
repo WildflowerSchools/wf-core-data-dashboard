@@ -128,24 +128,25 @@ def groups_table_html(
         ['N', 'Met growth goal', 'Met attainment goal',
             'Met goal', 'N', 'Percentile growth']
     ]
+    index_names = list(groups.index.names)
     groups.index.names = ['School year', 'School', 'Test', 'Subtest']
     group_dict = dict()
     if school_year is not None:
         groups = groups.xs(school_year, level='School year')
-        # group_dict['school_year']=school_year
+        index_names.remove('school_year')
     if school is not None:
         groups = groups.xs(school, level='School')
-        # group_dict['school']=school
+        index_names.remove('school')
     if test is not None:
         groups = groups.xs(test, level='Test')
-        # group_dict['test']=test
+        index_names.remove('test')
     if subtest is not None:
         groups = groups.xs(subtest, level='Subtest')
-        # group_dict['subtest']=subtest
+        index_names.remove('subtest')
     groups[('', '')] = groups.apply(
         lambda row: generate_students_table_link(
             row=row,
-            index_columns=groups.index.names,
+            index_columns=index_names,
             school_year=school_year,
             school=school,
             test=test,
@@ -186,7 +187,7 @@ def generate_students_table_link(
     if subtest is not None:
         query_dict['subtest']= subtest
     for index, column_name in enumerate(index_columns):
-        query_dict[inflection.underscore(column_name)]  = row.name[index]
+        query_dict[column_name]  = row.name[index]
     url = '/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,

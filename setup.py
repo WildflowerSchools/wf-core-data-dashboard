@@ -15,8 +15,7 @@ BASE_DEPENDENCIES = [
     'wf-core-data-python>=0.8.1',
     'pandas>=1.1.3',
     'fastapi[all]',
-    # 'wf_fastapi_auth0>=1.0',
-    'inflection>=0.5.1'
+    # 'wf_fastapi_auth0>=1.0'
 ]
 
 # TEST_DEPENDENCIES = [

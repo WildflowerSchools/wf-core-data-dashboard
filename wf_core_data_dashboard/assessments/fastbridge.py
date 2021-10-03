@@ -29,7 +29,8 @@ def groups_page_html(
     test=None,
     subtest=None,
     title=None,
-    subtitle=None
+    subtitle=None,
+    include_details_link=True
 ):
     if title is None:
         title = 'FastBridge results'
@@ -48,7 +49,8 @@ def groups_page_html(
         school_year=school_year,
         school=school,
         test=test,
-        subtest=subtest
+        subtest=subtest,
+        include_details_link=include_details_link
     )
     template = core.get_template("groups_table.html")
     return template.render(
@@ -99,7 +101,8 @@ def groups_table_html(
     school_year=None,
     school=None,
     test=None,
-    subtest=None
+    subtest=None,
+    include_details_link=True
 ):
     groups = groups.copy()
     groups['frac_met_growth_goal'] = groups['frac_met_growth_goal'].apply(
@@ -143,17 +146,18 @@ def groups_table_html(
     if subtest is not None:
         groups = groups.xs(subtest, level='Subtest')
         index_names.remove('subtest')
-    groups[('', '')] = groups.apply(
-        lambda row: generate_students_table_link(
-            row=row,
-            index_columns=index_names,
-            school_year=school_year,
-            school=school,
-            test=test,
-            subtest=subtest
-        ),
-        axis=1
-    )
+    if include_details_link:
+        groups[('', '')] = groups.apply(
+            lambda row: generate_students_table_link(
+                row=row,
+                index_columns=index_names,
+                school_year=school_year,
+                school=school,
+                test=test,
+                subtest=subtest
+            ),
+            axis=1
+        )
     table_html = groups.to_html(
         table_id='results',
         classes=[

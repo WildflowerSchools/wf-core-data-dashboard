@@ -1,12 +1,12 @@
 from wf_core_data_dashboard import core
-import fastbridge_utils
+import nwea_utils
 import pandas as pd
 import inflection
 import urllib.parse
 import os
 
 
-def generate_fastbridge_table_data(
+def generate_nwea_table_data(
     test_events_path,
     student_info_path,
     student_assignments_path
@@ -14,13 +14,19 @@ def generate_fastbridge_table_data(
     test_events = pd.read_pickle(test_events_path)
     student_info = pd.read_pickle(student_info_path)
     student_assignments = pd.read_pickle(student_assignments_path)
-    students = fastbridge_utils.summarize_by_student(
+    students = nwea_utils.summarize_by_student(
         test_events=test_events,
         student_info=student_info,
         student_assignments=student_assignments
     )
-    groups = fastbridge_utils.summarize_by_group(
-        students=students
+    groups = nwea_utils.summarize_by_group(
+        students=students,
+        grouping_variables=[
+            'school_year',
+            'school',
+            'subject',
+            'course'
+        ]
     )
     return students, groups
 
@@ -29,30 +35,30 @@ def groups_page_html(
     groups,
     school_year=None,
     school=None,
-    test=None,
-    subtest=None,
+    subject=None,
+    course=None,
     title=None,
     subtitle=None,
     include_details_link=True
 ):
     if title is None:
-        title = 'FastBridge results'
+        title = 'NWEA results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
             [
                 school_year,
                 school,
-                test,
-                subtest
+                subject,
+                course
             ]
         ))
     table_html = groups_table_html(
         groups,
         school_year=school_year,
         school=school,
-        test=test,
-        subtest=subtest,
+        subject=subject,
+        course=course,
         include_details_link=include_details_link
     )
     template = core.get_template("groups_table.html")
@@ -67,29 +73,29 @@ def students_page_html(
     students,
     school_year=None,
     school=None,
-    test=None,
-    subtest=None,
+    subject=None,
+    course=None,
     title=None,
     subtitle=None
 ):
     if title is None:
-        title = 'FastBridge results'
+        title = 'NWEA results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
             [
                 school_year,
                 school,
-                test,
-                subtest
+                subject,
+                course
             ]
         ))
     table_html = students_table_html(
         students=students,
         school_year=school_year,
         school=school,
-        test=test,
-        subtest=subtest
+        subject=subject,
+        course=course
     )
     template = core.get_template("students_table.html")
     return template.render(
@@ -103,39 +109,32 @@ def groups_table_html(
     groups,
     school_year=None,
     school=None,
-    test=None,
-    subtest=None,
+    subject=None,
+    course=None,
     include_details_link=True
 ):
     groups = groups.copy()
-    groups['frac_met_growth_goal'] = groups['frac_met_growth_goal'].apply(
-        lambda x: '{:.0f}%'.format(round(100 * x))
-    )
-    groups['frac_met_attainment_goal'] = groups['frac_met_attainment_goal'].apply(
-        lambda x: '{:.0f}%'.format(100 * x)
-    )
-    groups['frac_met_goal'] = groups['frac_met_goal'].apply(
-        lambda x: '{:.0f}%'.format(100 * x)
+    groups['mean_rit_score_growth'] = groups['mean_rit_score_growth'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
-        'num_valid_test_results',
-        'frac_met_growth_goal',
-        'frac_met_attainment_goal',
-        'frac_met_goal',
+        'num_test_results',
+        'num_valid_rit_score_growth',
+        'mean_rit_score_growth',
         'num_valid_percentile_growth',
         'mean_percentile_growth'
     ])
     groups.columns = [
-        ['Goals', 'Goals', 'Goals', 'Goals',
+        ['Test results', 'RIT score growth', 'RIT score growth',
             'Percentile growth', 'Percentile growth'],
-        ['N', 'Met growth goal', 'Met attainment goal',
-            'Met goal', 'N', 'Percentile growth']
+        ['N', 'N', 'Avg growth',
+            'N', 'Avg growth']
     ]
     index_names = list(groups.index.names)
-    groups.index.names = ['School year', 'School', 'Test', 'Subtest']
+    groups.index.names = ['School year', 'School', 'Subject', 'Course']
     group_dict = dict()
     if school_year is not None:
         groups = groups.xs(school_year, level='School year')
@@ -143,12 +142,12 @@ def groups_table_html(
     if school is not None:
         groups = groups.xs(school, level='School')
         index_names.remove('school')
-    if test is not None:
-        groups = groups.xs(test, level='Test')
-        index_names.remove('test')
-    if subtest is not None:
-        groups = groups.xs(subtest, level='Subtest')
-        index_names.remove('subtest')
+    if subject is not None:
+        groups = groups.xs(subject, level='Subject')
+        index_names.remove('subject')
+    if course is not None:
+        groups = groups.xs(course, level='Course')
+        index_names.remove('course')
     if include_details_link:
         groups[('', '')] = groups.apply(
             lambda row: generate_students_table_link(
@@ -156,8 +155,8 @@ def groups_table_html(
                 index_columns=index_names,
                 school_year=school_year,
                 school=school,
-                test=test,
-                subtest=subtest
+                subject=subject,
+                course=course
             ),
             axis=1
         )
@@ -180,8 +179,8 @@ def generate_students_table_link(
     index_columns,
     school_year=None,
     school=None,
-    test=None,
-    subtest=None,
+    subject=None,
+    course=None,
     link_content='Details'
 ):
     query_dict = dict()
@@ -189,13 +188,13 @@ def generate_students_table_link(
         query_dict['school_year']= school_year
     if school is not None:
         query_dict['school']= school
-    if test is not None:
-        query_dict['test']= test
-    if subtest is not None:
-        query_dict['subtest']= subtest
+    if subject is not None:
+        query_dict['subject']= subject
+    if course is not None:
+        query_dict['course']= course
     for index, column_name in enumerate(index_columns):
         query_dict[column_name]  = row.name[index]
-    url = '/fastbridge/students/?{}'.format(urllib.parse.urlencode(query_dict))
+    url = '/nwea/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,
         link_content
@@ -206,8 +205,8 @@ def students_table_html(
     students,
     school_year=None,
     school=None,
-    test=None,
-    subtest=None,
+    subject=None,
+    course=None,
     title=None,
     subtitle=None
 ):
@@ -218,39 +217,21 @@ def students_table_html(
         .set_index([
             'school_year',
             'school',
-            'test',
-            'subtest',
-            'fast_id'
+            'subject',
+            'course',
+            'student_id_nwea'
         ])
         .sort_index()
     )
-    students['risk_level_fall'] = students['risk_level_fall'].replace({
-        'lowRisk': 'Low',
-        'someRisk': 'Some',
-        'highRisk': 'High'
-    })
-    students['risk_level_winter'] = students['risk_level_winter'].replace({
-        'lowRisk': 'Low',
-        'someRisk': 'Some',
-        'highRisk': 'High'
-    })
-    students['risk_level_spring'] = students['risk_level_spring'].replace({
-        'lowRisk': 'Low',
-        'someRisk': 'Some',
-        'highRisk': 'High'
-    })
-    students['met_growth_goal'] = students['met_growth_goal'].replace({
-        False: 'N',
-        True: 'Y'
-    })
-    students['met_attainment_goal'] = students['met_attainment_goal'].replace({
-        False: 'N',
-        True: 'Y'
-    })
-    students['met_goal'] = students['met_goal'].replace({
-        False: 'N',
-        True: 'Y'
-    })
+    students['rit_score_fall'] = students['rit_score_fall'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
+    students['rit_score_winter'] = students['rit_score_winter'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
+    students['rit_score_spring'] = students['rit_score_spring'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
     students['percentile_fall'] = students['percentile_fall'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
@@ -263,37 +244,35 @@ def students_table_html(
     students = students.reindex(columns=[
         'first_name',
         'last_name',
-        'risk_level_fall',
-        'risk_level_winter',
-        'risk_level_spring',
-        'met_growth_goal',
-        'met_attainment_goal',
-        'met_goal',
+        'rit_score_fall',
+        'rit_score_winter',
+        'rit_score_spring',
+        'rit_score_growth',
         'percentile_fall',
         'percentile_winter',
         'percentile_spring',
         'percentile_growth'
     ])
     students.columns = [
-        ['Name', 'Name', 'Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
-            'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
-        ['First', 'Last', 'Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
-            'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
+        ['Name', 'Name', 'RIT score', 'RIT score', 'RIT score', 'RIT score',
+        'Percentile', 'Percentile', 'Percentile', 'Percentile'],
+        ['First', 'Last', 'Fall', 'Winter', 'Spring', 'Growth',
+        'Fall', 'Winter', 'Spring', 'Growth']
     ]
     students.index.names = [
         'School year',
         'School',
-        'Test',
-        'Subtest',
-        'FAST ID']
+        'Subject',
+        'Course',
+        'ID']
     if school_year is not None:
         students = students.xs(school_year, level='School year')
     if school is not None:
         students = students.xs(school, level='School')
-    if test is not None:
-        students = students.xs(test, level='Test')
-    if subtest is not None:
-        students = students.xs(subtest, level='Subtest')
+    if subject is not None:
+        students = students.xs(subject, level='Subject')
+    if course is not None:
+        students = students.xs(course, level='Course')
     table_html = students.to_html(
         table_id='results',
         classes=[

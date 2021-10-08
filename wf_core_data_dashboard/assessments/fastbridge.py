@@ -1,5 +1,5 @@
 from wf_core_data_dashboard import core
-import wf_core_data
+import fastbridge_utils
 import pandas as pd
 import inflection
 import urllib.parse
@@ -8,15 +8,18 @@ import os
 
 def generate_fastbridge_table_data(
     test_events_path,
-    student_info_path
+    student_info_path,
+    student_assignments_path
 ):
     test_events = pd.read_pickle(test_events_path)
     student_info = pd.read_pickle(student_info_path)
-    students = wf_core_data.summarize_by_student(
+    student_assignments = pd.read_pickle(student_assignments_path)
+    students = fastbridge_utils.summarize_by_student(
         test_events=test_events,
-        student_info=student_info
+        student_info=student_info,
+        student_assignments=student_assignments
     )
-    groups = wf_core_data.summarize_by_group(
+    groups = fastbridge_utils.summarize_by_group(
         students=students
     )
     return students, groups

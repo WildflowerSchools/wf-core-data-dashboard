@@ -7,7 +7,6 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from wf_core_data_dashboard.core import get_template
-from wf_core_data_dashboard import generate_fastbridge_table_data, groups_page_html, students_page_html
 
 class StatusResponse(BaseModel):
     status: str = "OK"
@@ -36,7 +35,7 @@ student_assignments_path = os.path.join(
     'student_assignments_20210916.pkl'
 )
 
-students, groups = generate_fastbridge_table_data(
+students, groups = wf_core_data_dashboard.assessments.fastbridge.generate_fastbridge_table_data(
     test_events_path,
     student_info_path,
     student_assignments_path
@@ -60,7 +59,7 @@ async def groups_page(
     test: Optional[str]=None,
     subtest: Optional[str]=None
 ):
-    return groups_page_html(
+    return wf_core_data_dashboard.assessments.fastbridge.groups_page_html(
         groups,
         school_year=school_year,
         school=school,
@@ -75,7 +74,7 @@ async def students_page(
     test: Optional[str]=None,
     subtest: Optional[str]=None
 ):
-    return students_page_html(
+    return wf_core_data_dashboard.assessments.fastbridge.students_page_html(
         students=students,
         school_year=school_year,
         school=school,

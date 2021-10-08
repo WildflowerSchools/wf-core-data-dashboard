@@ -53,7 +53,7 @@ async def index():
                            subtitle="Available Reports")
 
 
-@router.get("/groups/", response_class=HTMLResponse)
+@router.get("/fastbridge/groups/", response_class=HTMLResponse)
 async def groups_page(
     school_year: Optional[str]=None,
     school: Optional[str]=None,
@@ -68,7 +68,7 @@ async def groups_page(
         subtest=subtest
     )
 
-@router.get("/students/", response_class=HTMLResponse)
+@router.get("/fastbridge/students/", response_class=HTMLResponse)
 async def students_page(
     school_year: Optional[str]=None,
     school: Optional[str]=None,

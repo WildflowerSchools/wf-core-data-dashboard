@@ -25,14 +25,21 @@ test_events_path = os.path.join(
     data_directory,
     'test_events_20210916.pkl'
 )
+
 student_info_path = os.path.join(
     data_directory,
     'student_info_20210916.pkl'
 )
 
+student_assignments_path = os.path.join(
+    data_directory,
+    'student_assignments_20210916.pkl'
+)
+
 students, groups = generate_fastbridge_table_data(
     test_events_path,
-    student_info_path
+    student_info_path,
+    student_assignments_path
 )
 
 

@@ -195,7 +195,7 @@ def generate_students_table_link(
         query_dict['subtest']= subtest
     for index, column_name in enumerate(index_columns):
         query_dict[column_name]  = row.name[index]
-    url = '/students/?{}'.format(urllib.parse.urlencode(query_dict))
+    url = '/fastbridge/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,
         link_content

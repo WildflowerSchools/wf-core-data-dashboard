@@ -151,7 +151,6 @@ def groups_table_html(
             ),
             axis=1
         )
-    index=True
     if len(groups) < 2:
         index=False
     else:

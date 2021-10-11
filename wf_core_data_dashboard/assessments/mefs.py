@@ -128,28 +128,24 @@ def groups_table_html(
             'N', 'Avg'
         ]
     ]
-    index_names = list(groups.index.names)
-    groups.index.names = ['School year', 'School/classroom']
     group_dict = dict()
     if school_year is not None:
         groups = wf_core_data.select_index_level(
             dataframe=groups,
             value=school_year,
-            level='School year'
+            level='school_year'
         )
-        index_names.remove('school_year')
     if group_name_mefs is not None:
         groups = wf_core_data.select_index_level(
             dataframe=groups,
             value=group_name_mefs,
-            level='School/classroom'
+            level='group_name_mefs'
         )
-        index_names.remove('group_name_mefs')
     if include_details_link:
         groups[('', '')] = groups.apply(
             lambda row: generate_students_table_link(
                 row=row,
-                index_columns=index_names,
+                index_columns=groups.index.names,
                 school_year=school_year,
                 group_name_mefs=group_name_mefs
             ),
@@ -158,6 +154,14 @@ def groups_table_html(
     index=True
     if len(groups) < 2:
         index=False
+    else:
+        index=True
+        index_name_mapper_all = {
+            'school_year': 'School year',
+            'group_name_mefs': 'School/classroom'
+        }
+        index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in groups.index.names}
+        groups = groups.rename_axis(index=index_name_mapper)
     table_html = groups.to_html(
         table_id='results',
         classes=[
@@ -185,8 +189,11 @@ def generate_students_table_link(
         query_dict['school_year']= school_year
     if group_name_mefs is not None:
         query_dict['group_name_mefs']= group_name_mefs
-    for index, column_name in enumerate(index_columns):
-        query_dict[column_name]  = row.name[index]
+    if len(index_columns) == 1:
+        query_dict[index_columns[0]] = row.name
+    if len(index_columns) > 1:
+        for column_position, column_name in enumerate(index_columns):
+            query_dict[column_name]  = row.name[column_position]
     url = '/mefs/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,

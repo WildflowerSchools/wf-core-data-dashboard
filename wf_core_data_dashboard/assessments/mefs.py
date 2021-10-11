@@ -271,7 +271,8 @@ def students_table_html(
     students.index.names = [
         'School year',
         'School/classroom',
-        'ID']
+        'ID'
+    ]
     if school_year is not None:
         students = wf_core_data.select_index_level(
             dataframe=students,

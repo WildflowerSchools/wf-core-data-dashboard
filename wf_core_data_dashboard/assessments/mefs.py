@@ -109,7 +109,6 @@ def groups_table_html(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
-        'num_test_results',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
         'num_valid_total_score_growth',
@@ -119,13 +118,11 @@ def groups_table_html(
     ])
     groups.columns = [
         [
-            'Test results',
             'Percentile', 'Percentile',
             'Total score growth', 'Total score growth',
             'Percentile growth', 'Percentile growth'
         ],
         [
-            'N',
             'N', 'Avg',
             'N', 'Avg',
             'N', 'Avg'

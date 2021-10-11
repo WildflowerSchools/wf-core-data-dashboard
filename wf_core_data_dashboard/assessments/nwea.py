@@ -114,6 +114,9 @@ def groups_table_html(
     include_details_link=True
 ):
     groups = groups.copy()
+    groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_rit_score_growth'] = groups['mean_rit_score_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
@@ -121,38 +124,39 @@ def groups_table_html(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
-        'num_test_results',
+        'num_valid_ending_percentile',
+        'mean_ending_percentile',
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
         'num_valid_percentile_growth',
         'mean_percentile_growth'
     ])
     groups.columns = [
-        ['Test results', 'RIT score growth', 'RIT score growth',
-            'Percentile growth', 'Percentile growth'],
-        ['N', 'N', 'Avg growth',
-            'N', 'Avg growth']
+        [
+            'Percentile', 'Percentile',
+            'RIT score growth', 'RIT score growth',
+            'Percentile growth', 'Percentile growth'
+        ],
+        [
+            'N', 'Avg',
+            'N', 'Avg',
+            'N', 'Avg'
+        ]
     ]
-    index_names = list(groups.index.names)
-    groups.index.names = ['School year', 'School', 'Subject', 'Course']
     group_dict = dict()
     if school_year is not None:
-        groups = groups.xs(school_year, level='School year')
-        index_names.remove('school_year')
+        groups = groups.xs(school_year, level='school_year')
     if school is not None:
-        groups = groups.xs(school, level='School')
-        index_names.remove('school')
+        groups = groups.xs(school, level='school')
     if subject is not None:
-        groups = groups.xs(subject, level='Subject')
-        index_names.remove('subject')
+        groups = groups.xs(subject, level='subject')
     if course is not None:
-        groups = groups.xs(course, level='Course')
-        index_names.remove('course')
+        groups = groups.xs(course, level='course')
     if include_details_link:
         groups[('', '')] = groups.apply(
             lambda row: generate_students_table_link(
                 row=row,
-                index_columns=index_names,
+                index_columns=groups.index.names,
                 school_year=school_year,
                 school=school,
                 subject=subject,
@@ -160,6 +164,18 @@ def groups_table_html(
             ),
             axis=1
         )
+    if len(groups) < 2:
+        index=False
+    else:
+        index=True
+        index_name_mapper_all = {
+            'school_year': 'School year',
+            'school': 'School',
+            'subject': 'Subject',
+            'course': 'Course',
+        }
+        index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in groups.index.names}
+        groups = groups.rename_axis(index=index_name_mapper)
     table_html = groups.to_html(
         table_id='results',
         classes=[
@@ -192,8 +208,11 @@ def generate_students_table_link(
         query_dict['subject']= subject
     if course is not None:
         query_dict['course']= course
-    for index, column_name in enumerate(index_columns):
-        query_dict[column_name]  = row.name[index]
+    if len(index_columns) == 1:
+        query_dict[index_columns[0]] = row.name
+    if len(index_columns) > 1:
+        for column_position, column_name in enumerate(index_columns):
+            query_dict[column_name]  = row.name[column_position]
     url = '/nwea/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,
@@ -254,10 +273,16 @@ def students_table_html(
         'percentile_growth'
     ])
     students.columns = [
-        ['Name', 'Name', 'RIT score', 'RIT score', 'RIT score', 'RIT score',
-        'Percentile', 'Percentile', 'Percentile', 'Percentile'],
-        ['First', 'Last', 'Fall', 'Winter', 'Spring', 'Growth',
-        'Fall', 'Winter', 'Spring', 'Growth']
+        [
+            'Name', 'Name',
+            'RIT score', 'RIT score', 'RIT score', 'RIT score',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile'
+        ],
+        [
+            'First', 'Last',
+            'Fall', 'Winter', 'Spring', 'Growth',
+            'Fall', 'Winter', 'Spring', 'Growth'
+        ]
     ]
     students.index.names = [
         'School year',

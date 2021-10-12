@@ -1,13 +1,13 @@
 from wf_core_data_dashboard import core
 import wf_core_data
-import nwea_utils
+import mefs_utils
 import pandas as pd
 import inflection
 import urllib.parse
 import os
 
 
-def generate_nwea_table_data(
+def generate_mefs_table_data(
     test_events_path,
     student_info_path,
     student_assignments_path
@@ -15,18 +15,16 @@ def generate_nwea_table_data(
     test_events = pd.read_pickle(test_events_path)
     student_info = pd.read_pickle(student_info_path)
     student_assignments = pd.read_pickle(student_assignments_path)
-    students = nwea_utils.summarize_by_student(
+    students = mefs_utils.summarize_by_student(
         test_events=test_events,
         student_info=student_info,
         student_assignments=student_assignments
     )
-    groups = nwea_utils.summarize_by_group(
+    groups = mefs_utils.summarize_by_group(
         students=students,
         grouping_variables=[
             'school_year',
-            'school',
-            'subject',
-            'course'
+            'group_name_mefs'
         ]
     )
     return students, groups
@@ -35,31 +33,25 @@ def generate_nwea_table_data(
 def groups_page_html(
     groups,
     school_year=None,
-    school=None,
-    subject=None,
-    course=None,
+    group_name_mefs=None,
     title=None,
     subtitle=None,
     include_details_link=True
 ):
     if title is None:
-        title = 'NWEA results'
+        title = 'MEFS results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
             [
                 school_year,
-                school,
-                subject,
-                course
+                group_name_mefs
             ]
-        ))
+        )).replace('/', ':')
     table_html = groups_table_html(
         groups,
         school_year=school_year,
-        school=school,
-        subject=subject,
-        course=course,
+        group_name_mefs=group_name_mefs,
         include_details_link=include_details_link
     )
     template = core.get_template("groups_table.html")
@@ -73,30 +65,24 @@ def groups_page_html(
 def students_page_html(
     students,
     school_year=None,
-    school=None,
-    subject=None,
-    course=None,
+    group_name_mefs=None,
     title=None,
     subtitle=None
 ):
     if title is None:
-        title = 'NWEA results'
+        title = 'MEFS results'
     if subtitle is None:
         subtitle = ':'.join(filter(
             lambda x: x is not None,
             [
                 school_year,
-                school,
-                subject,
-                course
+                group_name_mefs
             ]
-        ))
+        )).replace('/', ':')
     table_html = students_table_html(
         students=students,
         school_year=school_year,
-        school=school,
-        subject=subject,
-        course=course
+        group_name_mefs=group_name_mefs
     )
     template = core.get_template("students_table.html")
     return template.render(
@@ -109,16 +95,14 @@ def students_page_html(
 def groups_table_html(
     groups,
     school_year=None,
-    school=None,
-    subject=None,
-    course=None,
+    group_name_mefs=None,
     include_details_link=True
 ):
     groups = groups.copy()
     groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    groups['mean_rit_score_growth'] = groups['mean_rit_score_growth'].apply(
+    groups['mean_total_score_growth'] = groups['mean_total_score_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
@@ -127,15 +111,15 @@ def groups_table_html(
     groups = groups.reindex(columns=[
         'num_valid_ending_percentile',
         'mean_ending_percentile',
-        'num_valid_rit_score_growth',
-        'mean_rit_score_growth',
+        'num_valid_total_score_growth',
+        'mean_total_score_growth',
         'num_valid_percentile_growth',
         'mean_percentile_growth'
     ])
     groups.columns = [
         [
             'Percentile', 'Percentile',
-            'RIT score growth', 'RIT score growth',
+            'Total score growth', 'Total score growth',
             'Percentile growth', 'Percentile growth'
         ],
         [
@@ -151,23 +135,11 @@ def groups_table_html(
             value=school_year,
             level='school_year'
         )
-    if school is not None:
+    if group_name_mefs is not None:
         groups = wf_core_data.select_index_level(
             dataframe=groups,
-            value=school,
-            level='school'
-        )
-    if subject is not None:
-        groups = wf_core_data.select_index_level(
-            dataframe=groups,
-            value=subject,
-            level='subject'
-        )
-    if course is not None:
-        groups = wf_core_data.select_index_level(
-            dataframe=groups,
-            value=course,
-            level='course'
+            value=group_name_mefs,
+            level='group_name_mefs'
         )
     if include_details_link:
         groups[('', '')] = groups.apply(
@@ -175,9 +147,7 @@ def groups_table_html(
                 row=row,
                 index_columns=groups.index.names,
                 school_year=school_year,
-                school=school,
-                subject=subject,
-                course=course
+                group_name_mefs=group_name_mefs
             ),
             axis=1
         )
@@ -187,9 +157,7 @@ def groups_table_html(
         index=True
         index_name_mapper_all = {
             'school_year': 'School year',
-            'school': 'School',
-            'subject': 'Subject',
-            'course': 'Course',
+            'group_name_mefs': 'School/classroom'
         }
         index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in groups.index.names}
         groups = groups.rename_axis(index=index_name_mapper)
@@ -212,26 +180,20 @@ def generate_students_table_link(
     row,
     index_columns,
     school_year=None,
-    school=None,
-    subject=None,
-    course=None,
+    group_name_mefs=None,
     link_content='Details'
 ):
     query_dict = dict()
     if school_year is not None:
         query_dict['school_year']= school_year
-    if school is not None:
-        query_dict['school']= school
-    if subject is not None:
-        query_dict['subject']= subject
-    if course is not None:
-        query_dict['course']= course
+    if group_name_mefs is not None:
+        query_dict['group_name_mefs']= group_name_mefs
     if len(index_columns) == 1:
         query_dict[index_columns[0]] = row.name
     if len(index_columns) > 1:
         for column_position, column_name in enumerate(index_columns):
             query_dict[column_name]  = row.name[column_position]
-    url = '/nwea/students/?{}'.format(urllib.parse.urlencode(query_dict))
+    url = '/mefs/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,
         link_content
@@ -241,9 +203,7 @@ def generate_students_table_link(
 def students_table_html(
     students,
     school_year=None,
-    school=None,
-    subject=None,
-    course=None,
+    group_name_mefs=None,
     title=None,
     subtitle=None
 ):
@@ -253,88 +213,78 @@ def students_table_html(
         .reset_index()
         .set_index([
             'school_year',
-            'school',
-            'subject',
-            'course',
-            'student_id_nwea'
+            'group_name_mefs',
+            'rs_id'
         ])
         .sort_index()
     )
-    students['rit_score_fall'] = students['rit_score_fall'].apply(
+    students['total_score_starting_date'] = students['total_score_starting_date'].apply(
+        lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
+    )
+    students['total_score_ending_date'] = students['total_score_ending_date'].apply(
+        lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
+    )
+    students['starting_total_score'] = students['starting_total_score'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students['rit_score_winter'] = students['rit_score_winter'].apply(
+    students['ending_total_score'] = students['ending_total_score'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students['rit_score_spring'] = students['rit_score_spring'].apply(
+    students['percentile_starting_date'] = students['percentile_starting_date'].apply(
+        lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
+    )
+    students['percentile_ending_date'] = students['percentile_ending_date'].apply(
+        lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
+    )
+    students['starting_percentile'] = students['starting_percentile'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
-    students['percentile_fall'] = students['percentile_fall'].apply(
-        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
-    )
-    students['percentile_winter'] = students['percentile_winter'].apply(
-        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
-    )
-    students['percentile_spring'] = students['percentile_spring'].apply(
+    students['ending_percentile'] = students['ending_percentile'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
     students = students.reindex(columns=[
         'first_name',
         'last_name',
-        'rit_score_fall',
-        'rit_score_winter',
-        'rit_score_spring',
-        'rit_score_growth',
-        'percentile_fall',
-        'percentile_winter',
-        'percentile_spring',
-        'percentile_growth'
+        'total_score_starting_date',
+        'total_score_ending_date',
+        'starting_total_score',
+        'ending_total_score',
+        'total_score_growth',
+        'percentile_starting_date',
+        'percentile_ending_date',
+        'starting_percentile',
+        'ending_percentile',
+        'percentile_growth',
     ])
     students.columns = [
         [
             'Name', 'Name',
-            'RIT score', 'RIT score', 'RIT score', 'RIT score',
-            'Percentile', 'Percentile', 'Percentile', 'Percentile'
+            'Total score', 'Total score', 'Total score', 'Total score', 'Total score',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile'
         ],
         [
             'First', 'Last',
-            'Fall', 'Winter', 'Spring', 'Growth',
-            'Fall', 'Winter', 'Spring', 'Growth'
+            'Start date', 'End date', 'Starting', 'Ending', 'Growth',
+            'Start date', 'End date', 'Starting', 'Ending', 'Growth'
         ]
+    ]
+    students.index.names = [
+        'School year',
+        'School/classroom',
+        'ID'
     ]
     if school_year is not None:
         students = wf_core_data.select_index_level(
             dataframe=students,
             value=school_year,
-            level='school_year'
+            level='School year'
         )
-    if school is not None:
+    if group_name_mefs is not None:
         students = wf_core_data.select_index_level(
             dataframe=students,
-            value=school,
-            level='school'
+            value=group_name_mefs,
+            level='School/classroom'
         )
-    if subject is not None:
-        students = wf_core_data.select_index_level(
-            dataframe=students,
-            value=subject,
-            level='subject'
-        )
-    if course is not None:
-        students = wf_core_data.select_index_level(
-            dataframe=students,
-            value=course,
-            level='course'
-        )
-    index_name_mapper_all = {
-        'school_year': 'School year',
-        'school': 'School',
-        'subject': 'Subject',
-        'course': 'Course',
-        'student_id_nwea': 'ID'
-    }
-    index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in students.index.names}
-    students = students.rename_axis(index=index_name_mapper)
     table_html = students.to_html(
         table_id='results',
         classes=[

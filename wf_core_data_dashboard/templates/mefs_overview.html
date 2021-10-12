@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}MEFS{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<ul class="list-group list-group-flush">
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021">2020-2021: All schools</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Minnesota+hub%2FMWMS+pod%2FCosmos+Montessori">2020-2021: Cosmos</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Minnesota+hub%2FMWMS+pod%2FLirio+Montessori">2020-2021: Lirio</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Minnesota+hub%2FMWMS+pod%2FWater+Lily+Montessori">2020-2021: Water Lily </a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Emerging+hub%2FMagnolia+Blossom+Montessori">2020-2021: Magnolia Blossom</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Massachusetts+hub%2FBroadway+pod%2FAllium+Montessori">2020-2021: Allium</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Massachusetts+hub%2FMassBridge+pod%2FDandelion+Montessori">2020-2021: Dandelion</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Massachusetts+hub%2FMassBridge+pod%2FWild+Rose%2FPrimary">2020-2021: Wild Rose Primary</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Massachusetts+hub%2FMassBridge+pod%2FWild+Rose%2FElementary">2020-2021: Wild Rose Elementary</a></li>
+  <li class="list-group-item"><a href="mefs/groups/?school_year=2020-2021&group_name_mefs=Massachusetts+hub%2FSan+Lorenzo+pod%2FMarigold+Montessori">2020-2021: Marigold</a></li>
+</ul>
+
+{% endblock %}

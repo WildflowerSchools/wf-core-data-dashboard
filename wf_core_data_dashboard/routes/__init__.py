@@ -98,9 +98,14 @@ students_mefs, groups_mefs = wf_core_data_dashboard.assessments.mefs.generate_me
 @router.get("/", response_class=HTMLResponse)
 async def index():
     template = get_template("index.html")
-    return template.render(title="Assessment Results",
-                           subtitle="Available Reports")
+    return template.render(title="Assessment results",
+                           subtitle="Available assessments")
 
+@router.get("/fastbridge", response_class=HTMLResponse)
+async def fastbridge_overview():
+    template = get_template("fastbridge_overview.html")
+    return template.render(title="FastBridge results",
+                           subtitle="Available reports")
 
 @router.get("/fastbridge/groups/", response_class=HTMLResponse)
 async def fastbridge_groups_page(
@@ -132,6 +137,12 @@ async def fastbridge_students_page(
         subtest=subtest
     )
 
+@router.get("/nwea", response_class=HTMLResponse)
+async def fastbridge_overview():
+    template = get_template("nwea_overview.html")
+    return template.render(title="NWEA results",
+                           subtitle="Available reports")
+
 @router.get("/nwea/groups/", response_class=HTMLResponse)
 async def nwea_groups_page(
     school_year: Optional[str]=None,
@@ -161,6 +172,12 @@ async def nwea_students_page(
         subject=subject,
         course=course
     )
+
+@router.get("/mefs", response_class=HTMLResponse)
+async def fastbridge_overview():
+    template = get_template("mefs_overview.html")
+    return template.render(title="MEFS results",
+                           subtitle="Available reports")
 
 @router.get("/mefs/groups/", response_class=HTMLResponse)
 async def mefs_groups_page(

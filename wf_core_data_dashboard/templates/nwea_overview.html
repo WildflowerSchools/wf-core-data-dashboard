@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}NWEA{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<ul class="list-group list-group-flush">
+  <li class="list-group-item"><a href="nwea/groups/?school_year=2020-2021">2020-2021: All schools</a></li>
+  <li class="list-group-item"><a href="nwea/groups/?school_year=2020-2021&school=Alyssum+Montessori+School">2020-2021: Alyssum</a></li>
+  <li class="list-group-item"><a href="nwea/groups/?school_year=2020-2021&school=Fox+Flower+Montessori">2020-2021: Fox Flower</a></li>
+  <li class="list-group-item"><a href="nwea/groups/?school_year=2020-2021&school=Hawthorn+Montessori">2020-2021: Hawthorn</a></li>
+  <li class="list-group-item"><a href="nwea/groups/?school_year=2020-2021&school=Gloria+Alston+Children%27s+Learning+Center">2020-2021: Gloria Alston</a></li>
+</ul>
+
+{% endblock %}

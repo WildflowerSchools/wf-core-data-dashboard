@@ -1,10 +1,10 @@
 from wf_core_data_dashboard import core
 import fastbridge_utils
+import wf_core_data
 import pandas as pd
 import inflection
 import urllib.parse
 import os
-
 
 def generate_fastbridge_table_data(
     test_events_path,
@@ -117,43 +117,64 @@ def groups_table_html(
     groups['frac_met_goal'] = groups['frac_met_goal'].apply(
         lambda x: '{:.0f}%'.format(100 * x)
     )
+    groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
-        'num_valid_test_results',
+        'num_valid_goal_info',
         'frac_met_growth_goal',
         'frac_met_attainment_goal',
         'frac_met_goal',
+        'num_valid_ending_percentile',
+        'mean_ending_percentile',
         'num_valid_percentile_growth',
         'mean_percentile_growth'
     ])
     groups.columns = [
-        ['Goals', 'Goals', 'Goals', 'Goals',
-            'Percentile growth', 'Percentile growth'],
-        ['N', 'Met growth goal', 'Met attainment goal',
-            'Met goal', 'N', 'Percentile growth']
+        [
+            'Goals', 'Goals', 'Goals', 'Goals',
+            'Percentile', 'Percentile',
+            'Percentile growth', 'Percentile growth'
+        ],
+        [
+            'N', 'Met growth goal', 'Met attainment goal', 'Met goal',
+            'N', 'Avg',
+            'N', 'Avg'
+        ]
     ]
-    index_names = list(groups.index.names)
-    groups.index.names = ['School year', 'School', 'Test', 'Subtest']
     group_dict = dict()
     if school_year is not None:
-        groups = groups.xs(school_year, level='School year')
-        index_names.remove('school_year')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=school_year,
+            level='school_year'
+        )
     if school is not None:
-        groups = groups.xs(school, level='School')
-        index_names.remove('school')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=school,
+            level='school'
+        )
     if test is not None:
-        groups = groups.xs(test, level='Test')
-        index_names.remove('test')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=test,
+            level='test'
+        )
     if subtest is not None:
-        groups = groups.xs(subtest, level='Subtest')
-        index_names.remove('subtest')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=subtest,
+            level='subtest'
+        )
     if include_details_link:
         groups[('', '')] = groups.apply(
             lambda row: generate_students_table_link(
                 row=row,
-                index_columns=index_names,
+                index_columns=groups.index.names,
                 school_year=school_year,
                 school=school,
                 test=test,
@@ -161,6 +182,18 @@ def groups_table_html(
             ),
             axis=1
         )
+    if len(groups) < 2:
+        index=False
+    else:
+        index=True
+        index_name_mapper_all = {
+            'school_year': 'School year',
+            'school': 'School',
+            'test': 'Test',
+            'subtest': 'Subtest'
+        }
+        index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in groups.index.names}
+        groups = groups.rename_axis(index=index_name_mapper)
     table_html = groups.to_html(
         table_id='results',
         classes=[
@@ -169,6 +202,7 @@ def groups_table_html(
             'table-hover',
             'table-sm'
         ],
+        index=index,
         bold_rows=False,
         na_rep='',
         escape=False
@@ -193,8 +227,11 @@ def generate_students_table_link(
         query_dict['test']= test
     if subtest is not None:
         query_dict['subtest']= subtest
-    for index, column_name in enumerate(index_columns):
-        query_dict[column_name]  = row.name[index]
+    if len(index_columns) == 1:
+        query_dict[index_columns[0]] = row.name
+    if len(index_columns) > 1:
+        for column_position, column_name in enumerate(index_columns):
+            query_dict[column_name]  = row.name[column_position]
     url = '/fastbridge/students/?{}'.format(urllib.parse.urlencode(query_dict))
     link_html = '<a href=\"{}\">{}</a>'.format(
         url,
@@ -275,25 +312,52 @@ def students_table_html(
         'percentile_growth'
     ])
     students.columns = [
-        ['Name', 'Name', 'Risk level', 'Risk level', 'Risk level', 'Met goal?', 'Met goal?',
-            'Met goal?', 'Percentile', 'Percentile', 'Percentile', 'Percentile'],
-        ['First', 'Last', 'Fall', 'Winter', 'Spring', 'Growth', 'Attainment',
-            'Overall', 'Fall', 'Winter', 'Spring', 'Growth']
+        [
+            'Name', 'Name',
+            'Risk level', 'Risk level', 'Risk level',
+            'Met goal?', 'Met goal?', 'Met goal?',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile'
+        ],
+        [
+            'First', 'Last',
+            'Fall', 'Winter', 'Spring',
+            'Growth', 'Attainment', 'Overall',
+            'Fall', 'Winter', 'Spring', 'Growth'
+        ]
     ]
-    students.index.names = [
-        'School year',
-        'School',
-        'Test',
-        'Subtest',
-        'FAST ID']
     if school_year is not None:
-        students = students.xs(school_year, level='School year')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=school_year,
+            level='school_year'
+        )
     if school is not None:
-        students = students.xs(school, level='School')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=school,
+            level='school'
+        )
     if test is not None:
-        students = students.xs(test, level='Test')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=test,
+            level='test'
+        )
     if subtest is not None:
-        students = students.xs(subtest, level='Subtest')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=subtest,
+            level='subtest'
+        )
+    index_name_mapper_all = {
+        'school_year': 'School year',
+        'school': 'School',
+        'test': 'Test',
+        'subtest': 'Subtest',
+        'fast_id': 'FAST ID'
+    }
+    index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in students.index.names}
+    students = students.rename_axis(index=index_name_mapper)
     table_html = students.to_html(
         table_id='results',
         classes=[

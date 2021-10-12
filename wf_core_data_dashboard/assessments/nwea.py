@@ -1,4 +1,5 @@
 from wf_core_data_dashboard import core
+import wf_core_data
 import nwea_utils
 import pandas as pd
 import inflection
@@ -145,13 +146,29 @@ def groups_table_html(
     ]
     group_dict = dict()
     if school_year is not None:
-        groups = groups.xs(school_year, level='school_year')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=school_year,
+            level='school_year'
+        )
     if school is not None:
-        groups = groups.xs(school, level='school')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=school,
+            level='school'
+        )
     if subject is not None:
-        groups = groups.xs(subject, level='subject')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=subject,
+            level='subject'
+        )
     if course is not None:
-        groups = groups.xs(course, level='course')
+        groups = wf_core_data.select_index_level(
+            dataframe=groups,
+            value=course,
+            level='course'
+        )
     if include_details_link:
         groups[('', '')] = groups.apply(
             lambda row: generate_students_table_link(
@@ -184,6 +201,7 @@ def groups_table_html(
             'table-hover',
             'table-sm'
         ],
+        index=index,
         bold_rows=False,
         na_rep='',
         escape=False
@@ -284,20 +302,39 @@ def students_table_html(
             'Fall', 'Winter', 'Spring', 'Growth'
         ]
     ]
-    students.index.names = [
-        'School year',
-        'School',
-        'Subject',
-        'Course',
-        'ID']
     if school_year is not None:
-        students = students.xs(school_year, level='School year')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=school_year,
+            level='school_year'
+        )
     if school is not None:
-        students = students.xs(school, level='School')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=school,
+            level='school'
+        )
     if subject is not None:
-        students = students.xs(subject, level='Subject')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=subject,
+            level='subject'
+        )
     if course is not None:
-        students = students.xs(course, level='Course')
+        students = wf_core_data.select_index_level(
+            dataframe=students,
+            value=course,
+            level='course'
+        )
+    index_name_mapper_all = {
+        'school_year': 'School year',
+        'school': 'School',
+        'subject': 'Subject',
+        'course': 'Course',
+        'student_id_nwea': 'ID'
+    }
+    index_name_mapper = {old_name: new_name for old_name, new_name in index_name_mapper_all.items() if old_name in students.index.names}
+    students = students.rename_axis(index=index_name_mapper)
     table_html = students.to_html(
         table_id='results',
         classes=[

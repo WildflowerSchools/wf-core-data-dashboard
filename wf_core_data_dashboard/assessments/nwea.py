@@ -122,13 +122,13 @@ def groups_table_html(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_rit_score_growth'] = groups['mean_rit_score_growth'].apply(
-        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_rit_score_growth_se'] = groups['mean_rit_score_growth_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
-        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['mean_percentile_growth_se'] = groups['mean_percentile_growth_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
@@ -281,6 +281,9 @@ def students_table_html(
     students['rit_score_spring'] = students['rit_score_spring'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
+    students['rit_score_growth'] = students['rit_score_growth'].apply(
+        lambda x: '{:+.0f}'.format(x) if not pd.isna(x) else ''
+    )
     students['rit_score_growth_se'] = students['rit_score_growth_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
@@ -292,6 +295,9 @@ def students_table_html(
     )
     students['percentile_spring'] = students['percentile_spring'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
+    students['percentile_growth'] = students['percentile_growth'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     students['percentile_growth_se'] = students['percentile_growth_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''

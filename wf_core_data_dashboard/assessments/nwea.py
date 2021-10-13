@@ -115,6 +115,27 @@ def groups_table_html(
     include_details_link=True
 ):
     groups = groups.copy()
+    groups['mean_rit_score_growth_range'] = groups.apply(
+        lambda row: '{:+.1f} - {:+.1f}'.format(
+            row['mean_rit_score_growth'] - row['mean_rit_score_growth_se'],
+            row['mean_rit_score_growth'] + row['mean_rit_score_growth_se'],
+        ) if not pd.isna(row['mean_rit_score_growth']) and not  pd.isna(row['mean_rit_score_growth_se']) else '',
+        axis=1
+    )
+    groups['mean_percentile_growth_range'] = groups.apply(
+        lambda row: '{:+.1f} - {:+.1f}'.format(
+            row['mean_percentile_growth'] - row['mean_percentile_growth_se'],
+            row['mean_percentile_growth'] + row['mean_percentile_growth_se'],
+        ) if not pd.isna(row['mean_percentile_growth']) and not  pd.isna(row['mean_percentile_growth_se']) else '',
+        axis=1
+    )
+    groups['mean_percentile_growth_per_school_year_range'] = groups.apply(
+        lambda row: '{:+.1f} - {:+.1f}'.format(
+            row['mean_percentile_growth_per_school_year'] - row['mean_percentile_growth_per_school_year_se'],
+            row['mean_percentile_growth_per_school_year'] + row['mean_percentile_growth_per_school_year_se'],
+        ) if not pd.isna(row['mean_percentile_growth_per_school_year']) and not  pd.isna(row['mean_percentile_growth_per_school_year_se']) else '',
+        axis=1
+    )
     groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
@@ -146,24 +167,27 @@ def groups_table_html(
         'num_valid_rit_score_growth',
         'mean_rit_score_growth',
         'mean_rit_score_growth_se',
+        'mean_rit_score_growth_range',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
         'mean_percentile_growth_se',
+        'mean_percentile_growth_range',
         'mean_percentile_growth_per_school_year',
-        'mean_percentile_growth_per_school_year_se'
+        'mean_percentile_growth_per_school_year_se',
+        'mean_percentile_growth_per_school_year_range'
     ])
     groups.columns = [
         [
             'Percentile', 'Percentile', 'Percentile',
-            'RIT score growth', 'RIT score growth', 'RIT score growth',
-            'Percentile growth', 'Percentile growth', 'Percentile growth',
-            'Percentile growth per school year', 'Percentile growth per school year'
+            'RIT score growth', 'RIT score growth', 'RIT score growth', 'RIT score growth',
+            'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
+            'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year'
         ],
         [
             'N', 'Avg', 'SE',
-            'N', 'Avg', 'SE',
-            'N', 'Avg', 'SE',
-            'Avg', 'SE'
+            'N', 'Avg', 'SE', 'Range',
+            'N', 'Avg', 'SE', 'Range',
+            'Avg', 'SE', 'Range'
         ]
     ]
     group_dict = dict()

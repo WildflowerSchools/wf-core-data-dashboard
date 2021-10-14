@@ -345,6 +345,12 @@ def students_table_html(
     students['percentile_spring'] = students['percentile_spring'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
+    students['percentile_growth'] = students['percentile_growth'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
+    students['percentile_growth_per_school_year'] = students['percentile_growth_per_school_year'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     students = students.reindex(columns=[
         'first_name',
         'last_name',
@@ -357,20 +363,21 @@ def students_table_html(
         'percentile_fall',
         'percentile_winter',
         'percentile_spring',
-        'percentile_growth'
+        'percentile_growth',
+        'percentile_growth_per_school_year'
     ])
     students.columns = [
         [
             'Name', 'Name',
             'Risk level', 'Risk level', 'Risk level',
             'Met goal?', 'Met goal?', 'Met goal?',
-            'Percentile', 'Percentile', 'Percentile', 'Percentile'
+            'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile'
         ],
         [
             'First', 'Last',
             'Fall', 'Winter', 'Spring',
             'Growth', 'Attainment', 'Overall',
-            'Fall', 'Winter', 'Spring', 'Growth'
+            'Fall', 'Winter', 'Spring', 'Growth', 'Growth per school year'
         ]
     ]
     if school_year is not None:

@@ -340,7 +340,7 @@ def students_table_html(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     students['rit_score_growth_per_school_year'] = students['rit_score_growth_per_school_year'].apply(
-        lambda x: '{:+.0f}'.format(x) if not pd.isna(x) else ''
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     students['rit_score_growth_per_school_year_se'] = students['rit_score_growth_per_school_year_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''

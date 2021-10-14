@@ -122,6 +122,13 @@ def groups_table_html(
         ) if not pd.isna(row['mean_rit_score_growth']) and not  pd.isna(row['mean_rit_score_growth_se']) else '',
         axis=1
     )
+    groups['mean_rit_score_growth_per_school_year_range'] = groups.apply(
+        lambda row: '{:+.1f} - {:+.1f}'.format(
+            row['mean_rit_score_growth_per_school_year'] - row['mean_rit_score_growth_per_school_year_se'],
+            row['mean_rit_score_growth_per_school_year'] + row['mean_rit_score_growth_per_school_year_se'],
+        ) if not pd.isna(row['mean_rit_score_growth_per_school_year']) and not  pd.isna(row['mean_rit_score_growth_per_school_year_se']) else '',
+        axis=1
+    )
     groups['mean_percentile_growth_range'] = groups.apply(
         lambda row: '{:+.1f} - {:+.1f}'.format(
             row['mean_percentile_growth'] - row['mean_percentile_growth_se'],
@@ -154,6 +161,12 @@ def groups_table_html(
     groups['mean_rit_score_growth_se'] = groups['mean_rit_score_growth_se'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
+    groups['mean_rit_score_growth_per_school_year'] = groups['mean_rit_score_growth_per_school_year'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_rit_score_growth_per_school_year_se'] = groups['mean_rit_score_growth_per_school_year_se'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
         lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
@@ -177,6 +190,9 @@ def groups_table_html(
         'mean_rit_score_growth',
         'mean_rit_score_growth_se',
         'mean_rit_score_growth_range',
+        'mean_rit_score_growth_per_school_year',
+        'mean_rit_score_growth_per_school_year_se',
+        'mean_rit_score_growth_per_school_year_range',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
         'mean_percentile_growth_se',
@@ -190,6 +206,7 @@ def groups_table_html(
             'Attainment', 'Attainment', 'Attainment',
             'Attainment', 'Attainment', 'Attainment',
             'Growth', 'Growth', 'Growth', 'Growth',
+            'Growth', 'Growth', 'Growth',
             'Growth', 'Growth', 'Growth', 'Growth',
             'Growth', 'Growth', 'Growth'
         ],
@@ -197,6 +214,7 @@ def groups_table_html(
             'RIT score', 'RIT score', 'RIT score',
             'Percentile', 'Percentile', 'Percentile',
             'RIT score growth', 'RIT score growth', 'RIT score growth', 'RIT score growth',
+            'RIT score growth per school year', 'RIT score growth per school year', 'RIT score growth per school year',
             'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
             'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year'
         ],
@@ -204,6 +222,7 @@ def groups_table_html(
             'N', 'Avg', 'SE',
             'N', 'Avg', 'SE',
             'N', 'Avg', 'SE', 'Range',
+            'Avg', 'SE', 'Range',
             'N', 'Avg', 'SE', 'Range',
             'Avg', 'SE', 'Range'
         ]

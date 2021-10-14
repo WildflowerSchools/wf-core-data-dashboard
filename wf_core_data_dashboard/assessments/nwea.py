@@ -136,6 +136,12 @@ def groups_table_html(
         ) if not pd.isna(row['mean_percentile_growth_per_school_year']) and not  pd.isna(row['mean_percentile_growth_per_school_year_se']) else '',
         axis=1
     )
+    groups['mean_ending_rit_score'] = groups['mean_ending_rit_score'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_ending_rit_score_se'] = groups['mean_ending_rit_score_se'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
@@ -161,6 +167,9 @@ def groups_table_html(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
+        'num_valid_ending_rit_score',
+        'mean_ending_rit_score',
+        'mean_ending_rit_score_se',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
         'mean_ending_percentile_se',
@@ -178,12 +187,21 @@ def groups_table_html(
     ])
     groups.columns = [
         [
+            'Attainment', 'Attainment', 'Attainment',
+            'Attainment', 'Attainment', 'Attainment',
+            'Growth', 'Growth', 'Growth', 'Growth',
+            'Growth', 'Growth', 'Growth', 'Growth',
+            'Growth', 'Growth', 'Growth'
+        ],
+        [
+            'RIT score', 'RIT score', 'RIT score',
             'Percentile', 'Percentile', 'Percentile',
             'RIT score growth', 'RIT score growth', 'RIT score growth', 'RIT score growth',
             'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
             'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year'
         ],
         [
+            'N', 'Avg', 'SE',
             'N', 'Avg', 'SE',
             'N', 'Avg', 'SE', 'Range',
             'N', 'Avg', 'SE', 'Range',
@@ -216,7 +234,7 @@ def groups_table_html(
             level='course'
         )
     if include_details_link:
-        groups[('', '')] = groups.apply(
+        groups[('', '', '')] = groups.apply(
             lambda row: generate_students_table_link(
                 row=row,
                 index_columns=groups.index.names,

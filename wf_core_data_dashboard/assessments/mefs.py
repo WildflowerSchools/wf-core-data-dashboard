@@ -329,6 +329,9 @@ def students_table_html(
     students['ending_total_score'] = students['ending_total_score'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
+    students['total_score_growth'] = students['total_score_growth'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
     students['percentile_starting_date'] = students['percentile_starting_date'].apply(
         lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
     )
@@ -339,6 +342,9 @@ def students_table_html(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
     students['ending_percentile'] = students['ending_percentile'].apply(
+        lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
+    )
+    students['percentile_growth'] = students['percentile_growth'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
     students = students.reindex(columns=[

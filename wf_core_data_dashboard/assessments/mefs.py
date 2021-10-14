@@ -332,6 +332,9 @@ def students_table_html(
     students['total_score_growth'] = students['total_score_growth'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
+    students['total_score_growth_per_school_year'] = students['total_score_growth_per_school_year'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     students['percentile_starting_date'] = students['percentile_starting_date'].apply(
         lambda x: x.strftime('%m/%d/%Y') if not pd.isna(x) else ''
     )
@@ -347,6 +350,9 @@ def students_table_html(
     students['percentile_growth'] = students['percentile_growth'].apply(
         lambda x: '{:.0f}'.format(x) if not pd.isna(x) else ''
     )
+    students['percentile_growth_per_school_year'] = students['percentile_growth_per_school_year'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     students = students.reindex(columns=[
         'first_name',
         'last_name',
@@ -355,22 +361,24 @@ def students_table_html(
         'starting_total_score',
         'ending_total_score',
         'total_score_growth',
+        'total_score_growth_per_school_year',
         'percentile_starting_date',
         'percentile_ending_date',
         'starting_percentile',
         'ending_percentile',
         'percentile_growth',
+        'percentile_growth_per_school_year'
     ])
     students.columns = [
         [
             'Name', 'Name',
-            'Total score', 'Total score', 'Total score', 'Total score', 'Total score',
-            'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile'
+            'Total score', 'Total score', 'Total score', 'Total score', 'Total score',  'Total score',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile'
         ],
         [
             'First', 'Last',
-            'Start date', 'End date', 'Starting', 'Ending', 'Growth',
-            'Start date', 'End date', 'Starting', 'Ending', 'Growth'
+            'Start date', 'End date', 'Starting', 'Ending', 'Growth', 'Growth per school year',
+            'Start date', 'End date', 'Starting', 'Ending', 'Growth', 'Growth per school year'
         ]
     ]
     students.index.names = [

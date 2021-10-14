@@ -108,6 +108,27 @@ def groups_table_html(
     include_details_link=True
 ):
     groups = groups.copy()
+    groups['mean_ending_percentile_sd_range'] = groups.apply(
+        lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
+            row['mean_ending_percentile'] - row['ending_percentile_sd'],
+            row['mean_ending_percentile'] + row['ending_percentile_sd'],
+        ) if not pd.isna(row['mean_ending_percentile']) and not  pd.isna(row['ending_percentile_sd']) else '',
+        axis=1
+    )
+    groups['mean_percentile_growth_sd_range'] = groups.apply(
+        lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
+            row['mean_percentile_growth'] - row['percentile_growth_sd'],
+            row['mean_percentile_growth'] + row['percentile_growth_sd'],
+        ) if not pd.isna(row['mean_percentile_growth']) and not  pd.isna(row['percentile_growth_sd']) else '',
+        axis=1
+    )
+    groups['mean_percentile_growth_per_school_year_sd_range'] = groups.apply(
+        lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
+            row['mean_percentile_growth_per_school_year'] - row['percentile_growth_per_school_year_sd'],
+            row['mean_percentile_growth_per_school_year'] + row['percentile_growth_per_school_year_sd'],
+        ) if not pd.isna(row['mean_percentile_growth_per_school_year']) and not  pd.isna(row['percentile_growth_per_school_year_sd']) else '',
+        axis=1
+    )
     groups['frac_met_growth_goal'] = groups['frac_met_growth_goal'].apply(
         lambda x: '{:.0f}%'.format(round(100 * x))
     )
@@ -120,7 +141,19 @@ def groups_table_html(
     groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
+    groups['ending_percentile_sd'] = groups['ending_percentile_sd'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['percentile_growth_sd'] = groups['percentile_growth_sd'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_percentile_growth_per_school_year'] = groups['mean_percentile_growth_per_school_year'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['percentile_growth_per_school_year_sd'] = groups['percentile_growth_per_school_year_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups = groups.reindex(columns=[
@@ -130,19 +163,34 @@ def groups_table_html(
         'frac_met_goal',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
+        'ending_percentile_sd',
+        'mean_ending_percentile_sd_range',
         'num_valid_percentile_growth',
-        'mean_percentile_growth'
+        'mean_percentile_growth',
+        'percentile_growth_sd',
+        'mean_percentile_growth_sd_range',
+        'mean_percentile_growth_per_school_year',
+        'percentile_growth_per_school_year_sd',
+        'mean_percentile_growth_per_school_year_sd_range',
     ])
     groups.columns = [
         [
             'Goals', 'Goals', 'Goals', 'Goals',
-            'Percentile', 'Percentile',
-            'Percentile growth', 'Percentile growth'
+            'Attainment', 'Attainment', 'Attainment', 'Attainment',
+            'Growth', 'Growth', 'Growth', 'Growth',
+            'Growth', 'Growth', 'Growth'
         ],
         [
-            'N', 'Met growth goal', 'Met attainment goal', 'Met goal',
-            'N', 'Avg',
-            'N', 'Avg'
+            'Fraction meeting goal', 'Fraction meeting goal', 'Fraction meeting goal', 'Fraction meeting goal',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile',
+            'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
+            'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year'
+        ],
+        [
+            'N', 'Growth goal', 'Attainment goal', 'Overall goal',
+            'N', 'Avg', 'SD', 'SD range',
+            'N', 'Avg', 'SD', 'SD range',
+            'Avg', 'SD', 'SD range'
         ]
     ]
     group_dict = dict()
@@ -171,7 +219,7 @@ def groups_table_html(
             level='subtest'
         )
     if include_details_link:
-        groups[('', '')] = groups.apply(
+        groups[('', '', '')] = groups.apply(
             lambda row: generate_students_table_link(
                 row=row,
                 index_columns=groups.index.names,

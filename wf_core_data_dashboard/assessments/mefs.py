@@ -99,46 +99,46 @@ def groups_table_html(
     include_details_link=True
 ):
     groups = groups.copy()
-    groups['mean_ending_total_score_sd_range'] = groups.apply(
-        lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_ending_total_score'] - row['ending_total_score_sd'],
-            row['mean_ending_total_score'] + row['ending_total_score_sd'],
-        ) if not pd.isna(row['mean_ending_total_score']) and not pd.isna(row['ending_total_score_sd']) else '',
+    groups['mean_ending_total_score_sem_range'] = groups.apply(
+        lambda row: '{:.1f} &ndash; {:.1f}'.format(
+            row['mean_ending_total_score'] - row['mean_ending_total_score_sem'],
+            row['mean_ending_total_score'] + row['mean_ending_total_score_sem'],
+        ) if not pd.isna(row['mean_ending_total_score']) and not pd.isna(row['mean_ending_total_score_sem']) else '',
         axis=1
     )
-    groups['mean_total_score_growth_sd_range'] = groups.apply(
+    groups['mean_total_score_growth_sem_range'] = groups.apply(
         lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_total_score_growth'] - row['total_score_growth_sd'],
-            row['mean_total_score_growth'] + row['total_score_growth_sd'],
-        ) if not pd.isna(row['mean_total_score_growth']) and not  pd.isna(row['total_score_growth_sd']) else '',
+            row['mean_total_score_growth'] - row['mean_total_score_growth_sem'],
+            row['mean_total_score_growth'] + row['mean_total_score_growth_sem'],
+        ) if not pd.isna(row['mean_total_score_growth']) and not pd.isna(row['mean_total_score_growth_sem']) else '',
         axis=1
     )
-    groups['mean_total_score_growth_per_school_year_sd_range'] = groups.apply(
+    groups['mean_total_score_growth_per_school_year_sem_range'] = groups.apply(
         lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_total_score_growth_per_school_year'] - row['total_score_growth_per_school_year_sd'],
-            row['mean_total_score_growth_per_school_year'] + row['total_score_growth_per_school_year_sd'],
-        ) if not pd.isna(row['mean_total_score_growth_per_school_year']) and not  pd.isna(row['total_score_growth_per_school_year_sd']) else '',
+            row['mean_total_score_growth_per_school_year'] - row['mean_total_score_growth_per_school_year_sem'],
+            row['mean_total_score_growth_per_school_year'] + row['mean_total_score_growth_per_school_year_sem'],
+        ) if not pd.isna(row['mean_total_score_growth_per_school_year']) and not pd.isna(row['mean_total_score_growth_per_school_year_sem']) else '',
         axis=1
     )
-    groups['mean_ending_percentile_sd_range'] = groups.apply(
-        lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_ending_percentile'] - row['ending_percentile_sd'],
-            row['mean_ending_percentile'] + row['ending_percentile_sd'],
-        ) if not pd.isna(row['mean_ending_percentile']) and not  pd.isna(row['ending_percentile_sd']) else '',
+    groups['mean_ending_percentile_sem_range'] = groups.apply(
+        lambda row: '{:.1f} &ndash; {:.1f}'.format(
+            row['mean_ending_percentile'] - row['mean_ending_percentile_sem'],
+            row['mean_ending_percentile'] + row['mean_ending_percentile_sem'],
+        ) if not pd.isna(row['mean_ending_percentile']) and not pd.isna(row['mean_ending_percentile_sem']) else '',
         axis=1
     )
-    groups['mean_percentile_growth_sd_range'] = groups.apply(
+    groups['mean_percentile_growth_sem_range'] = groups.apply(
         lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_percentile_growth'] - row['percentile_growth_sd'],
-            row['mean_percentile_growth'] + row['percentile_growth_sd'],
-        ) if not pd.isna(row['mean_percentile_growth']) and not  pd.isna(row['percentile_growth_sd']) else '',
+            row['mean_percentile_growth'] - row['mean_percentile_growth_sem'],
+            row['mean_percentile_growth'] + row['mean_percentile_growth_sem'],
+        ) if not pd.isna(row['mean_percentile_growth']) and not pd.isna(row['mean_percentile_growth_sem']) else '',
         axis=1
     )
-    groups['mean_percentile_growth_per_school_year_sd_range'] = groups.apply(
+    groups['mean_percentile_growth_per_school_year_sem_range'] = groups.apply(
         lambda row: '{:+.1f} &ndash; {:+.1f}'.format(
-            row['mean_percentile_growth_per_school_year'] - row['percentile_growth_per_school_year_sd'],
-            row['mean_percentile_growth_per_school_year'] + row['percentile_growth_per_school_year_sd'],
-        ) if not pd.isna(row['mean_percentile_growth_per_school_year']) and not  pd.isna(row['percentile_growth_per_school_year_sd']) else '',
+            row['mean_percentile_growth_per_school_year'] - row['mean_percentile_growth_per_school_year_sem'],
+            row['mean_percentile_growth_per_school_year'] + row['mean_percentile_growth_per_school_year_sem'],
+        ) if not pd.isna(row['mean_percentile_growth_per_school_year']) and not pd.isna(row['mean_percentile_growth_per_school_year_sem']) else '',
         axis=1
     )
     groups['mean_ending_total_score'] = groups['mean_ending_total_score'].apply(
@@ -147,34 +147,52 @@ def groups_table_html(
     groups['ending_total_score_sd'] = groups['ending_total_score_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
+    groups['mean_ending_total_score_sem'] = groups['mean_ending_total_score_sem'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['mean_ending_percentile'] = groups['mean_ending_percentile'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['ending_percentile_sd'] = groups['ending_percentile_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    groups['mean_total_score_growth'] = groups['mean_total_score_growth'].apply(
+    groups['mean_ending_percentile_sem'] = groups['mean_ending_percentile_sem'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_total_score_growth'] = groups['mean_total_score_growth'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['total_score_growth_sd'] = groups['total_score_growth_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    groups['mean_total_score_growth_per_school_year'] = groups['mean_total_score_growth_per_school_year'].apply(
+    groups['mean_total_score_growth_sem'] = groups['mean_total_score_growth_sem'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_total_score_growth_per_school_year'] = groups['mean_total_score_growth_per_school_year'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['total_score_growth_per_school_year_sd'] = groups['total_score_growth_per_school_year_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
+    groups['mean_total_score_growth_per_school_year_sem'] = groups['mean_total_score_growth_per_school_year_sem'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_percentile_growth'] = groups['mean_percentile_growth'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['percentile_growth_sd'] = groups['percentile_growth_sd'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
-    groups['mean_percentile_growth_per_school_year'] = groups['mean_percentile_growth_per_school_year'].apply(
+    groups['mean_percentile_growth_sem'] = groups['mean_percentile_growth_sem'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
+    groups['mean_percentile_growth_per_school_year'] = groups['mean_percentile_growth_per_school_year'].apply(
+        lambda x: '{:+.1f}'.format(x) if not pd.isna(x) else ''
+    )
     groups['percentile_growth_per_school_year_sd'] = groups['percentile_growth_per_school_year_sd'].apply(
+        lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
+    )
+    groups['mean_percentile_growth_per_school_year_sem'] = groups['mean_percentile_growth_per_school_year_sem'].apply(
         lambda x: '{:.1f}'.format(x) if not pd.isna(x) else ''
     )
     groups['frac_met_goal'] = groups['frac_met_goal'].apply(
@@ -184,54 +202,60 @@ def groups_table_html(
         'num_valid_ending_total_score',
         'mean_ending_total_score',
         'ending_total_score_sd',
-        'mean_ending_total_score_sd_range',
+        'mean_ending_total_score_sem',
+        'mean_ending_total_score_sem_range',
         'num_valid_ending_percentile',
         'mean_ending_percentile',
         'ending_percentile_sd',
-        'mean_ending_percentile_sd_range',
+        'mean_ending_percentile_sem',
+        'mean_ending_percentile_sem_range',
         'num_valid_total_score_growth',
         'mean_total_score_growth',
         'total_score_growth_sd',
-        'mean_total_score_growth_sd_range',
+        'mean_total_score_growth_sem',
+        'mean_total_score_growth_sem_range',
         'mean_total_score_growth_per_school_year',
         'total_score_growth_per_school_year_sd',
-        'mean_total_score_growth_per_school_year_sd_range',
+        'mean_total_score_growth_per_school_year_sem',
+        'mean_total_score_growth_per_school_year_sem_range',
         'num_valid_percentile_growth',
         'mean_percentile_growth',
         'percentile_growth_sd',
-        'mean_percentile_growth_sd_range',
+        'mean_percentile_growth_sem',
+        'mean_percentile_growth_sem_range',
         'mean_percentile_growth_per_school_year',
         'percentile_growth_per_school_year_sd',
-        'mean_percentile_growth_per_school_year_sd_range',
+        'mean_percentile_growth_per_school_year_sem',
+        'mean_percentile_growth_per_school_year_sem_range',
         'num_valid_goal_info',
         'frac_met_goal'
     ])
     groups.columns = [
         [
-            'Attainment', 'Attainment', 'Attainment', 'Attainment',
-            'Attainment', 'Attainment', 'Attainment', 'Attainment',
+            'Attainment', 'Attainment', 'Attainment', 'Attainment', 'Attainment',
+            'Attainment', 'Attainment', 'Attainment', 'Attainment', 'Attainment',
+            'Growth', 'Growth', 'Growth', 'Growth', 'Growth',
             'Growth', 'Growth', 'Growth', 'Growth',
-            'Growth', 'Growth', 'Growth',
+            'Growth', 'Growth', 'Growth', 'Growth', 'Growth',
             'Growth', 'Growth', 'Growth', 'Growth',
-            'Growth', 'Growth', 'Growth',
             'Goals', 'Goals'
         ],
         [
-            'Total score', 'Total score', 'Total score', 'Total score',
-            'Percentile', 'Percentile', 'Percentile', 'Percentile',
-            'Total score growth', 'Total score growth', 'Total score growth', 'Total score growth',
-            'Total score growth per school year', 'Total score growth per school year', 'Total score growth per school year',
-            'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
-            'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year',
+            'Total score', 'Total score', 'Total score', 'Total score', 'Total score',
+            'Percentile', 'Percentile', 'Percentile', 'Percentile', 'Percentile',
+            'Total score growth', 'Total score growth', 'Total score growth', 'Total score growth', 'Total score growth',
+            'Total score growth per school year', 'Total score growth per school year', 'Total score growth per school year', 'Total score growth per school year',
+            'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth', 'Percentile growth',
+            'Percentile growth per school year', 'Percentile growth per school year', 'Percentile growth per school year',  'Percentile growth per school year',
             'Fraction meeting goal', 'Fraction meeting goal'
         ],
         [
-            'N', 'Avg', 'SD', 'SD range',
-            'N', 'Avg', 'SD', 'SD range',
-            'N', 'Avg', 'SD', 'SD range',
-            'Avg', 'SD', 'SD range',
-            'N', 'Avg', 'SD', 'SD range',
-            'Avg', 'SD', 'SD range',
+            'N', 'Avg', 'SD', 'SEM', 'Error range',
+            'N', 'Avg', 'SD', 'SEM', 'Error range',
+            'N', 'Avg', 'SD', 'SEM', 'Error range',
+            'Avg', 'SD', 'SEM', 'Error range',
+            'N', 'Avg', 'SD', 'SEM', 'Error range',
+            'Avg', 'SD', 'SEM', 'Error range',
             'N', 'Frac met goal'
         ]
     ]
